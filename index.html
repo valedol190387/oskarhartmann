@@ -8,14 +8,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
     <style>
         :root {
-            --tg-theme-bg-color: #000000;
-            --tg-theme-text-color: #ffffff;
-            --tg-theme-hint-color: #999999;
-            --tg-theme-link-color: #ff6b00;
-            --tg-theme-button-color: #ff6b00;
-            --tg-theme-button-text-color: #ffffff;
-            --accent-color: #ff6b00;
-            --card-bg: rgba(255, 255, 255, 0.1);
+            /* Принудительно устанавливаем темную тему */
+            --tg-theme-bg-color: #000000 !important;
+            --tg-theme-text-color: #ffffff !important;
+            --tg-theme-hint-color: #999999 !important;
+            --tg-theme-link-color: #ff6b00 !important;
+            --tg-theme-button-color: #ff6b00 !important;
+            --tg-theme-button-text-color: #ffffff !important;
+            --accent-color: #ff6b00 !important;
+            --card-bg: rgba(255, 255, 255, 0.1) !important;
         }
 
         * {
@@ -26,8 +27,8 @@
         }
 
         body {
-            background-color: var(--tg-theme-bg-color);
-            color: var(--tg-theme-text-color);
+            background-color: #000000 !important;
+            color: #ffffff !important;
             line-height: 1.6;
         }
 
@@ -39,12 +40,13 @@
         }
 
         .form-card {
-            background: var(--card-bg);
+            background: rgba(255, 255, 255, 0.1) !important;
             backdrop-filter: blur(10px);
             border-radius: 16px;
             padding: 24px;
             margin-bottom: 24px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            color: #ffffff !important;
         }
 
         h2 {
@@ -69,10 +71,10 @@
         textarea {
             width: 100%;
             padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
             border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--tg-theme-text-color);
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: #ffffff !important;
             font-size: 1rem;
         }
 
@@ -187,16 +189,16 @@
         }
 
         .select2-container--default .select2-selection--single {
-            background-color: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
             border-radius: 8px;
             height: auto;
             padding: 12px;
-            color: var(--tg-theme-text-color);
+            color: #ffffff !important;
         }
 
         .select2-container--default .select2-selection--single .select2-selection__rendered {
-            color: var(--tg-theme-text-color);
+            color: #ffffff !important;
             line-height: normal;
         }
 
@@ -205,8 +207,8 @@
         }
 
         .select2-dropdown {
-            background-color: #000000;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: #000000 !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
         }
 
         .select2-container--default .select2-results__option--highlighted[aria-selected] {
@@ -214,14 +216,14 @@
         }
 
         .select2-container--default .select2-search--dropdown .select2-search__field {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: var(--tg-theme-text-color);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
             border-radius: 4px;
         }
 
         .select2-results__option {
-            color: var(--tg-theme-text-color);
+            color: #ffffff !important;
             padding: 8px 12px;
         }
 
@@ -570,6 +572,12 @@
             
             const form = document.getElementById('registrationForm');
             form.addEventListener('submit', handleSubmit);
+
+            // Принудительно устанавливаем темную тему
+            if (window.Telegram?.WebApp) {
+                window.Telegram.WebApp.setHeaderColor('secondary_bg_color');
+                window.Telegram.WebApp.setBackgroundColor('#000000');
+            }
         });
     </script>
 </body>
