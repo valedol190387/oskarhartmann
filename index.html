@@ -220,11 +220,19 @@
             color: #ffffff !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
             border-radius: 4px;
+            height: 48px !important;
+            font-size: 16px !important;
+            padding: 12px !important;
         }
 
         .select2-results__option {
             color: #ffffff !important;
-            padding: 8px 12px;
+            padding: 12px !important;
+            font-size: 16px !important;
+        }
+
+        .select2-search--dropdown {
+            padding: 12px !important;
         }
 
         @media (max-width: 360px) {
@@ -534,14 +542,33 @@
                 });
 
                 if (response.ok) {
-                    alert('Анкета успешно отправлена!');
-                    
-                    // Открываем приложение Telegram
-                    window.open('https://t.me/unicorncamp_hartmann_bot/unicorncamp', '_blank');
-                    
-                    // Закрываем веб-приложение
-                    if (tg.close) {
-                        tg.close();
+                    // Показываем конфетти
+                    if (window.Telegram?.WebApp?.showPopup) {
+                        // Сначала показываем попап с анимацией
+                        window.Telegram.WebApp.showPopup({
+                            title: '🎉 Поздравляем!',
+                            message: 'Анкета успешно отправлена',
+                            buttons: [{
+                                type: 'ok',
+                                text: 'Отлично!'
+                            }]
+                        }, function() {
+                            // После закрытия попапа
+                            // Открываем приложение Telegram
+                            window.open('https://t.me/unicorncamp_hartmann_bot/unicorncamp', '_blank');
+                            
+                            // Закрываем веб-приложение
+                            if (tg.close) {
+                                tg.close();
+                            }
+                        });
+                    } else {
+                        // Если метод showPopup недоступен, показываем обычное сообщение
+                        alert('Анкета успешно отправлена!');
+                        window.open('https://t.me/unicorncamp_hartmann_bot/unicorncamp', '_blank');
+                        if (tg.close) {
+                            tg.close();
+                        }
                     }
                 } else {
                     throw new Error(`Server response: ${await response.text()}`);
