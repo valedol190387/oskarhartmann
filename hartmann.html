@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hartmann Club - Анкета участника</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
+    <style>
+        :root {
+            --tg-theme-bg-color: #000000;
+            --tg-theme-text-color: #ffffff;
+            --tg-theme-hint-color: #999999;
+            --tg-theme-link-color: #ff6b00;
+            --tg-theme-button-color: #ff6b00;
+            --tg-theme-button-text-color: #ffffff;
+            --accent-color: #ff6b00;
+            --card-bg: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--tg-theme-text-color);
+        }
+
+        input[type="text"],
+        input[type="url"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--tg-theme-text-color);
+            font-size: 1rem;
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        .photo-upload {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .photo-upload img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-upload input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .photo-upload-text {
+            text-align: center;
+            color: var(--tg-theme-hint-color);
+        }
+
+        .photo-upload-text i {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .photo-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .photo-button {
+            flex: 1;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: var(--tg-theme-text-color);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .photo-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 16px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background: #ff8533;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-color);
+            border-radius: 2px;
+            width: 0;
+            transition: width 0.3s ease;
+        }
+
+        /* Select2 Customization */
+        .select2-container {
+            width: 100% !important;
+        }
+
+        .select2-container--default .select2-selection--single {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            height: auto;
+            padding: 12px;
+            color: var(--tg-theme-text-color);
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: var(--tg-theme-text-color);
+            line-height: normal;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 100%;
+        }
+
+        .select2-dropdown {
+            background-color: #000000;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: var(--accent-color);
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--tg-theme-text-color);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .select2-results__option {
+            color: var(--tg-theme-text-color);
+            padding: 8px 12px;
+        }
+
+        @media (max-width: 360px) {
+            .container {
+                padding: 16px;
+            }
+
+            .form-card {
+                padding: 16px;
+            }
+
+            input[type="text"],
+            input[type="url"],
+            select,
+            textarea {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+
+        <form id="registrationForm">
+            <div class="form-card">
+                <h2>Анкета участника</h2>
+                
+                <div class="form-group">
+                    <label for="fullName">ФИО</label>
+                    <input type="text" id="fullName" name="fullName" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Фото</label>
+                    <div class="photo-upload" id="photoUpload">
+                        <img id="userPhoto" src="" alt="Фото пользователя" style="display: none;">
+                        <div class="photo-upload-text" id="photoPlaceholder">
+                            <i>📸</i>
+                            <p>Загрузка фото из Telegram...</p>
+                        </div>
+                    </div>
+                    <div class="photo-buttons">
+                        <button type="button" class="photo-button" id="uploadButton">
+                            <span>📁</span> Загрузить с устройства
+                        </button>
+                        <button type="button" class="photo-button" id="cameraButton">
+                            <span>📷</span> Сделать фото
+                        </button>
+                    </div>
+                    <input type="file" id="photo" name="photo" accept="image/*" style="display: none;">
+                </div>
+
+                <div class="form-group">
+                    <label for="city">Город</label>
+                    <select id="city" name="city" class="searchable-select" required>
+                        <option value="">Выберите город</option>
+                        <!-- Cities will be populated by JavaScript -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="industry">Сфера деятельности</label>
+                    <select id="industry" name="industry" class="searchable-select" required>
+                        <option value="">Выберите сферу</option>
+                        <!-- Industries will be populated by JavaScript -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="role">Роль в компании/проекте</label>
+                    <select id="role" name="role" class="searchable-select" required>
+                        <option value="">Выберите роль</option>
+                        <!-- Roles will be populated by JavaScript -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="companyWebsite">Сайт Вашей компании/проекта</label>
+                    <input type="url" id="companyWebsite" name="companyWebsite" placeholder="https://">
+                </div>
+
+                <div class="form-group">
+                    <label for="companySocial">Социальные сети Вашей компании</label>
+                    <input type="text" id="companySocial" name="companySocial" placeholder="Ссылки на соц. сети">
+                </div>
+
+                <div class="form-group">
+                    <label for="personalSocial">Ваши социальные сети</label>
+                    <input type="text" id="personalSocial" name="personalSocial" placeholder="Ссылки на ваши соц. сети">
+                </div>
+
+                <div class="form-group">
+                    <label for="hobbies">Ваши хобби/увлечения</label>
+                    <textarea id="hobbies" name="hobbies" rows="3" placeholder="Расскажите о ваших увлечениях"></textarea>
+                </div>
+
+                <button type="submit">Отправить анкету</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script>
+        const tg = window.Telegram?.WebApp;
+        const webapp = window.Telegram.WebApp;
+
+        // Initialize Telegram WebApp
+        if (tg.expand) {
+            tg.expand();
+        }
+
+        // Cities data
+        const cities = [
+            "Москва", "Московская область", "Санкт-Петербург", "Ленинградская область",
+            "Новосибирск", "Екатеринбург", "Казань", "Нижний Новгород", "Красноярск",
+            "Челябинск", "Самара", "Уфа", "Ростов-на-Дону", "Омск", "Воронеж", "Пермь",
+            "Волгоград", "Алматы", "Астана (Нур-Султан)", "Бишкек", "Гана", "Ереван",
+            "Стокгольм", "Ташкент", "Дубай", "Абу-Даби", "Абакан", "Анапа", "Архангельск",
+            "Астрахань", "Барнаул", "Белгород", "Бийск", "Благовещенск", "Брянск",
+            "Владикавказ", "Владимир", "Владивосток", "Грозный", "Дербент", "Ессентуки",
+            "Иваново", "Ижевск", "Иркутск", "Йошкар-Ола", "Калининград", "Калуга",
+            "Кемерово", "Киров", "Кострома", "Курган", "Курск", "Кызыл", "Липецк",
+            "Магадан", "Магнитогорск", "Майкоп", "Махачкала", "Мурманск", "Набережные Челны",
+            "Назрань", "Нальчик", "Находка", "Невинномысск", "Нерюнгри", "Нижневартовск",
+            "Нижнекамск", "Новокузнецк", "Новороссийск", "Новочеркасск", "Новошахтинск",
+            "Норильск", "Оренбург", "Орел", "Пенза", "Петрозаводск", "Петропавловск-Камчатский",
+            "Прокопьевск", "Псков", "Пятигорск", "Рязань", "Салават", "Саранск", "Саратов",
+            "Севастополь", "Симферополь", "Смоленск", "Сочи", "Ставрополь", "Стерлитамак",
+            "Сургут", "Сыктывкар", "Тамбов", "Тверь", "Томск", "Тула", "Тюмень", "Улан-Удэ",
+            "Ульяновск", "Уссурийск", "Хабаровск", "Ханты-Мансийск", "Чебоксары", "Чита",
+            "Элиста", "Южно-Сахалинск", "Якутск", "Ярославль"
+        ];
+
+        // Industries data
+        const industries = [
+            "Технологии",
+            "Медиа / Образование / Маркетинг",
+            "Услуги",
+            "Ритейл",
+            "Производство",
+            "Логистика",
+            "Недвижимость / Строительство",
+            "Здоровье / Медицина",
+            "HoReCa",
+            "Игры / Развлечения",
+            "Энергетика",
+            "Агротех / Фермерство",
+            "Финансы / Юриспруденция",
+            "Госуслуги / НКО"
+        ];
+
+        // Roles data
+        const roles = [
+            "Основатель / владелец / партнер бизнеса",
+            "Инициатор стартапа",
+            "Инвестор",
+            "СЕО / директор / управляющий",
+            "Руководитель отдела / направления",
+            "Предметный эксперт",
+            "Фрилансер",
+            "Линейный сотрудник"
+        ];
+
+        // Populate select elements
+        function populateSelect(selectId, options) {
+            const select = document.getElementById(selectId);
+            options.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option;
+                opt.textContent = option;
+                select.appendChild(opt);
+            });
+        }
+
+        // Handle photo upload
+        function handlePhotoUpload() {
+            const photoUpload = document.getElementById('photoUpload');
+            const userPhoto = document.getElementById('userPhoto');
+            const photoPlaceholder = document.getElementById('photoPlaceholder');
+            const photoInput = document.getElementById('photo');
+            const uploadButton = document.getElementById('uploadButton');
+            const cameraButton = document.getElementById('cameraButton');
+
+            // Добавим отладочный вывод
+            console.log('Telegram user:', tg.initDataUnsafe?.user);
+            console.log('Telegram photo URL:', tg.initDataUnsafe?.user?.photo_url);
+
+            // Try to get user photo from Telegram
+            if (tg.initDataUnsafe?.user?.photo_url) {
+                console.log('Setting Telegram photo URL:', tg.initDataUnsafe.user.photo_url);
+                userPhoto.src = tg.initDataUnsafe.user.photo_url;
+                userPhoto.style.display = 'block';
+                photoPlaceholder.style.display = 'none';
+                // Сохраняем URL в data-атрибут для последующего использования
+                userPhoto.setAttribute('data-telegram-url', tg.initDataUnsafe.user.photo_url);
+            } else {
+                userPhoto.style.display = 'none';
+                photoPlaceholder.style.display = 'block';
+            }
+
+            // Handle file upload button
+            uploadButton.addEventListener('click', function() {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.style.display = 'none';
+                document.body.appendChild(fileInput);
+                
+                fileInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            userPhoto.src = e.target.result;
+                            userPhoto.style.display = 'block';
+                            photoPlaceholder.style.display = 'none';
+                            // Also set the hidden input
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(file);
+                            photoInput.files = dataTransfer.files;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                    document.body.removeChild(fileInput);
+                });
+                
+                fileInput.click();
+            });
+
+            // Handle camera button
+            cameraButton.addEventListener('click', function() {
+                const cameraInput = document.createElement('input');
+                cameraInput.type = 'file';
+                cameraInput.accept = 'image/*';
+                cameraInput.capture = 'environment'; // Changed from 'user' to 'environment'
+                cameraInput.style.display = 'none';
+                document.body.appendChild(cameraInput);
+                
+                cameraInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            userPhoto.src = e.target.result;
+                            userPhoto.style.display = 'block';
+                            photoPlaceholder.style.display = 'none';
+                            // Also set the hidden input
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(file);
+                            photoInput.files = dataTransfer.files;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                    document.body.removeChild(cameraInput);
+                });
+                
+                cameraInput.click();
+            });
+        }
+
+        // Form submission
+        async function handleSubmit(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            
+            // Добавляем все текстовые поля
+            formData.append('telegram_id', tg.initDataUnsafe?.user?.id || null);
+            formData.append('fullName', e.target.fullName.value);
+            formData.append('city', e.target.city.value);
+            formData.append('industry', e.target.industry.value);
+            formData.append('role', e.target.role.value);
+            formData.append('companyWebsite', e.target.companyWebsite.value || '');
+            formData.append('companySocial', e.target.companySocial.value || '');
+            formData.append('personalSocial', e.target.personalSocial.value || '');
+            formData.append('hobbies', e.target.hobbies.value || '');
+
+            // Обрабатываем фото
+            const photoInput = document.getElementById('photo');
+            const userPhoto = document.getElementById('userPhoto');
+            
+            console.log('Photo input files:', photoInput.files);
+            console.log('User photo src:', userPhoto.src);
+            console.log('Is Telegram photo:', userPhoto.src && userPhoto.src.includes('t.me/i/userpic'));
+
+            if (photoInput.files && photoInput.files[0]) {
+                // Если загружено новое фото
+                formData.append('photo', photoInput.files[0]);
+                console.log('Appending photo file');
+            } else if (userPhoto.src && userPhoto.src.includes('t.me/i/userpic')) {
+                // Если используется фото из Telegram, добавляем его URL
+                formData.append('photo_url', userPhoto.src);
+                console.log('Appending Telegram photo URL:', userPhoto.src);
+            } else {
+                console.log('Not a Telegram photo or no photo URL');
+            }
+
+            try {
+                const response = await fetch('https://n8n.snapn8n.ru/webhook/5ecd32e2-60ff-4080-a738-e3c31b7f89ce', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert('Анкета успешно отправлена!');
+                    
+                    // Открываем приложение Telegram
+                    window.open('https://t.me/unicorncamp_hartmann_bot/unicorncamp', '_blank');
+                    
+                    // Закрываем веб-приложение
+                    if (tg.close) {
+                        tg.close();
+                    }
+                } else {
+                    throw new Error(`Server response: ${await response.text()}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Произошла ошибка при отправке анкеты. Пожалуйста, попробуйте позже.');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            webapp.ready();
+            
+            populateSelect('city', cities);
+            populateSelect('industry', industries);
+            populateSelect('role', roles);
+            
+            // Initialize Select2 for searchable dropdowns
+            $('.searchable-select').select2({
+                theme: 'default',
+                width: '100%',
+                placeholder: 'Начните вводить для поиска...',
+                allowClear: true
+            });
+            
+            handlePhotoUpload();
+            
+            const form = document.getElementById('registrationForm');
+            form.addEventListener('submit', handleSubmit);
+        });
+    </script>
+</body>
+</html> 
