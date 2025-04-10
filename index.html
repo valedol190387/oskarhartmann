@@ -332,8 +332,6 @@
                     <label for="hobbies">Ваши хобби/увлечения</label>
                     <textarea id="hobbies" name="hobbies" rows="3" placeholder="Расскажите о ваших увлечениях"></textarea>
                 </div>
-
-                <button type="submit">Отправить анкету</button>
             </div>
         </form>
     </div>
@@ -502,6 +500,11 @@
         async function handleSubmit(e) {
             e.preventDefault();
             
+            // Отключаем кнопку на время отправки
+            if (window.Telegram?.WebApp?.MainButton) {
+                window.Telegram.WebApp.MainButton.showProgress();
+            }
+            
             const formData = new FormData();
             
             // Добавляем все текстовые поля
@@ -542,9 +545,13 @@
                 });
 
                 if (response.ok) {
+                    // Возвращаем кнопку в нормальное состояние
+                    if (window.Telegram?.WebApp?.MainButton) {
+                        window.Telegram.WebApp.MainButton.hideProgress();
+                    }
+                    
                     // Показываем конфетти
                     if (window.Telegram?.WebApp?.showPopup) {
-                        // Сначала показываем попап с анимацией
                         window.Telegram.WebApp.showPopup({
                             title: '🎉 Поздравляем!',
                             message: 'Анкета успешно отправлена',
@@ -553,17 +560,12 @@
                                 text: 'Отлично!'
                             }]
                         }, function() {
-                            // После закрытия попапа
-                            // Открываем приложение Telegram
                             window.open('https://t.me/unicorncamp_hartmann_bot/unicorncamp', '_blank');
-                            
-                            // Закрываем веб-приложение
                             if (tg.close) {
                                 tg.close();
                             }
                         });
                     } else {
-                        // Если метод showPopup недоступен, показываем обычное сообщение
                         alert('Анкета успешно отправлена!');
                         window.open('https://t.me/unicorncamp_hartmann_bot/unicorncamp', '_blank');
                         if (tg.close) {
@@ -574,6 +576,10 @@
                     throw new Error(`Server response: ${await response.text()}`);
                 }
             } catch (error) {
+                // В случае ошибки возвращаем кнопку в нормальное состояние
+                if (window.Telegram?.WebApp?.MainButton) {
+                    window.Telegram.WebApp.MainButton.hideProgress();
+                }
                 console.error('Error:', error);
                 alert('Произошла ошибка при отправке анкеты. Пожалуйста, попробуйте позже.');
             }
@@ -604,6 +610,27 @@
             if (window.Telegram?.WebApp) {
                 window.Telegram.WebApp.setHeaderColor('secondary_bg_color');
                 window.Telegram.WebApp.setBackgroundColor('#000000');
+            }
+
+            // Находим и удаляем существующую кнопку submit из формы
+            const submitButton = document.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.remove();
+            }
+
+            // Настраиваем главную кнопку
+            if (window.Telegram?.WebApp?.MainButton) {
+                const mainButton = window.Telegram.WebApp.MainButton;
+                mainButton.text = "Отправить анкету";
+                mainButton.color = "#ff6b00";
+                mainButton.textColor = "#ffffff";
+                mainButton.show();
+                
+                // Привязываем отправку формы к нажатию на главную кнопку
+                mainButton.onClick(function() {
+                    const form = document.getElementById('registrationForm');
+                    form.dispatchEvent(new Event('submit'));
+                });
             }
         });
     </script>
