@@ -830,7 +830,31 @@
             setupSocialButtons('personalSocialFields', 'personalSocial');
         }
         
-        // Настройка кнопок социальных сетей
+        // Создаю общую функцию для обновления состояния кнопок социальных сетей
+        function updateSocialButtonStates(buttons, addedTypes) {
+            buttons.forEach(button => {
+                const socialType = button.getAttribute('data-social');
+                const isDisabled = addedTypes.includes(socialType);
+                button.classList.toggle('disabled', isDisabled);
+                button.disabled = isDisabled;
+            });
+        }
+        
+        // Улучшенная функция для создания социальных полей - вынесена общая логика
+        function createSocialField(container, socialType, socialLabel, fieldId, value = '') {
+            const fieldHtml = `
+                <div class="social-field" data-social="${socialType}">
+                    <span>${socialLabel}:</span>
+                    <input type="text" id="${fieldId}" placeholder="https://" class="social-input" value="${value}">
+                    <button type="button" class="remove-button">✕</button>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', fieldHtml);
+            return document.getElementById(fieldId);
+        }
+        
+        // Настройка кнопок социальных сетей - оптимизированная версия
         function setupSocialButtons(containerId, hiddenInputId) {
             const container = document.getElementById(containerId);
             const hiddenInput = document.getElementById(hiddenInputId);
@@ -840,25 +864,17 @@
             // Массив для отслеживания добавленных соцсетей
             const addedSocialTypes = [];
             
-            // Функция для проверки и автодополнения URL
-            function validateAndFormatUrl(input, socialType) {
-                let value = input.value.trim();
-                // Просто возвращаем введенное пользователем значение, без какой-либо обработки
-                return value;
-            }
-            
-            // Функция для проверки уже добавленных соцсетей
-            function updateButtonStates() {
-                buttons.forEach(button => {
-                    const socialType = button.getAttribute('data-social');
-                    if (addedSocialTypes.includes(socialType)) {
-                        button.classList.add('disabled');
-                        button.disabled = true;
-                    } else {
-                        button.classList.remove('disabled');
-                        button.disabled = false;
+            // Создаем стили для отключенных кнопок только один раз при инициализации
+            if (!document.getElementById('social-buttons-style')) {
+                const style = document.createElement('style');
+                style.id = 'social-buttons-style';
+                style.textContent = `
+                    .social-button.disabled {
+                        opacity: 0.5;
+                        cursor: not-allowed;
                     }
-                });
+                `;
+                document.head.appendChild(style);
             }
             
             buttons.forEach(button => {
@@ -868,7 +884,6 @@
                     
                     // Проверяем, не добавлена ли уже эта соцсеть
                     if (addedSocialTypes.includes(socialType)) {
-                        // Если соцсеть уже добавлена, показываем уведомление и выходим
                         alert(`Вы уже добавили ${socialLabel}. Можно добавить только одну ссылку для каждой социальной сети.`);
                         return;
                     }
@@ -879,92 +894,38 @@
                     // Создаем уникальный ID для поля
                     const fieldId = `${containerId}_${socialType}_${Date.now()}`;
                     
-                    // Устанавливаем подсказку в зависимости от типа соцсети
-                    let placeholder = "https://";
-                    switch(socialType) {
-                        case 'telegram':
-                            placeholder = "https://";
-                            break;
-                        case 'instagram':
-                            placeholder = "https://";
-                            break;
-                        case 'youtube':
-                            placeholder = "https://";
-                            break;
-                        case 'vk':
-                            placeholder = "https://";
-                            break;
-                    }
-                    
                     // Создаем новое поле
-                    const fieldHtml = `
-                        <div class="social-field" data-social="${socialType}">
-                            <span>${socialLabel}:</span>
-                            <input type="text" id="${fieldId}" placeholder="${placeholder}" class="social-input">
-                            <button type="button" class="remove-button">✕</button>
-                        </div>
-                    `;
-                    
-                    container.insertAdjacentHTML('beforeend', fieldHtml);
+                    const input = createSocialField(container, socialType, socialLabel, fieldId);
                     
                     // Добавляем обработчик для удаления
-                    const removeButton = container.querySelector(`#${fieldId}`).nextElementSibling;
+                    const removeButton = input.nextElementSibling;
                     removeButton.addEventListener('click', function() {
                         const field = this.closest('.social-field');
-                        const socialType = field.getAttribute('data-social');
+                        const fieldSocialType = field.getAttribute('data-social');
                         
                         // Удаляем тип соцсети из массива
-                        const index = addedSocialTypes.indexOf(socialType);
+                        const index = addedSocialTypes.indexOf(fieldSocialType);
                         if (index > -1) {
                             addedSocialTypes.splice(index, 1);
                         }
                         
                         field.remove();
                         updateSocialData(container, hiddenInput);
-                        updateButtonStates(); // Обновляем состояние кнопок
-                        saveFormData();
+                        updateSocialButtonStates(buttons, addedSocialTypes);
                     });
                     
-                    // Добавляем обработчик для сохранения и форматирования
-                    const input = document.getElementById(fieldId);
+                    // Добавляем обработчик для сохранения
                     input.addEventListener('input', function() {
                         updateSocialData(container, hiddenInput);
-                        saveFormData();
-                    });
-                    
-                    // Добавляем обработчик для автодополнения при потере фокуса
-                    input.addEventListener('blur', function() {
-                        const currentValue = this.value;
-                        const formattedValue = validateAndFormatUrl({ 
-                            value: currentValue, 
-                            trim: () => currentValue.trim() 
-                        }, socialType);
-                        
-                        if (formattedValue !== currentValue) {
-                            this.value = formattedValue;
-                            updateSocialData(container, hiddenInput);
-                            saveFormData();
-                        }
                     });
                     
                     updateSocialData(container, hiddenInput);
-                    updateButtonStates(); // Обновляем состояние кнопок
-                    saveFormData();
+                    updateSocialButtonStates(buttons, addedSocialTypes);
                 });
             });
-            
-            // Добавляем стили для отключенных кнопок
-            const style = document.createElement('style');
-            style.textContent = `
-                .social-button.disabled {
-                    opacity: 0.5;
-                    cursor: not-allowed;
-                }
-            `;
-            document.head.appendChild(style);
         }
         
-        // Обновление данных социальных сетей
+        // Обновление данных социальных сетей - упрощенная версия
         function updateSocialData(container, hiddenInput) {
             const socialFields = container.querySelectorAll('.social-field');
             const socialData = [];
@@ -980,6 +941,7 @@
             });
             
             hiddenInput.value = socialData.join('\n');
+            saveFormData();
         }
 
         // Save form data to localStorage
@@ -1127,7 +1089,7 @@
             }
         }
         
-        // Восстановление полей социальных сетей
+        // Восстановление полей социальных сетей - оптимизированная версия
         function restoreSocialFields(containerId, hiddenInputId, socialData) {
             if (!socialData) return;
             
@@ -1142,25 +1104,12 @@
             // Массив для отслеживания добавленных соцсетей
             const addedSocialTypes = [];
             
-            // Функция для проверки и автодополнения URL
-            function validateAndFormatUrl(input, socialType) {
-                let value = input.value.trim();
-                // Просто возвращаем введенное пользователем значение, без какой-либо обработки
-                return value;
-            }
-            
             const socialItems = socialData.split('\n');
             socialItems.forEach(item => {
                 if (!item) return;
                 
                 const [socialType, value] = item.split(':');
                 if (!socialType || !value) return;
-                
-                // Проверяем и форматируем URL
-                const formattedValue = validateAndFormatUrl(
-                    { value: value, trim: () => value.trim() },
-                    socialType
-                );
                 
                 // Добавляем тип соцсети в массив
                 addedSocialTypes.push(socialType);
@@ -1176,36 +1125,11 @@
                 // Создаем уникальный ID для поля
                 const fieldId = `${containerId}_${socialType}_${Date.now()}`;
                 
-                // Устанавливаем подсказку в зависимости от типа соцсети
-                let placeholder = "https://";
-                switch(socialType) {
-                    case 'telegram':
-                        placeholder = "https://";
-                        break;
-                    case 'instagram':
-                        placeholder = "https://";
-                        break;
-                    case 'youtube':
-                        placeholder = "https://";
-                        break;
-                    case 'vk':
-                        placeholder = "https://";
-                        break;
-                }
-                
-                // Создаем новое поле
-                const fieldHtml = `
-                    <div class="social-field" data-social="${socialType}">
-                        <span>${socialLabel}:</span>
-                        <input type="text" id="${fieldId}" placeholder="${placeholder}" class="social-input" value="${formattedValue}">
-                        <button type="button" class="remove-button">✕</button>
-                    </div>
-                `;
-                
-                container.insertAdjacentHTML('beforeend', fieldHtml);
+                // Создаем новое поле с сохраненным значением
+                const input = createSocialField(container, socialType, socialLabel, fieldId, value);
                 
                 // Добавляем обработчик для удаления
-                const removeButton = container.querySelector(`#${fieldId}`).nextElementSibling;
+                const removeButton = input.nextElementSibling;
                 removeButton.addEventListener('click', function() {
                     const field = this.closest('.social-field');
                     const fieldSocialType = field.getAttribute('data-social');
@@ -1218,56 +1142,17 @@
                     
                     field.remove();
                     updateSocialData(container, hiddenInput);
-                    
-                    // Обновляем состояние кнопок
-                    buttons.forEach(button => {
-                        const btnSocialType = button.getAttribute('data-social');
-                        if (addedSocialTypes.includes(btnSocialType)) {
-                            button.classList.add('disabled');
-                            button.disabled = true;
-                        } else {
-                            button.classList.remove('disabled');
-                            button.disabled = false;
-                        }
-                    });
-                    
-                    saveFormData();
+                    updateSocialButtonStates(buttons, addedSocialTypes);
                 });
                 
                 // Добавляем обработчик для сохранения
-                const input = document.getElementById(fieldId);
                 input.addEventListener('input', function() {
                     updateSocialData(container, hiddenInput);
-                    saveFormData();
-                });
-                
-                // Добавляем обработчик для автодополнения при потере фокуса
-                input.addEventListener('blur', function() {
-                    const currentValue = this.value;
-                    const formattedValue = validateAndFormatUrl({ 
-                        value: currentValue, 
-                        trim: () => currentValue.trim() 
-                    }, socialType);
-                    
-                    if (formattedValue !== currentValue) {
-                        this.value = formattedValue;
-                        updateSocialData(container, hiddenInput);
-                        saveFormData();
-                    }
                 });
             });
             
             // Обновляем состояние кнопок после восстановления
-            buttons.forEach(button => {
-                const btnSocialType = button.getAttribute('data-social');
-                if (addedSocialTypes.includes(btnSocialType)) {
-                    button.classList.add('disabled');
-                    button.disabled = true;
-                } else {
-                    button.classList.remove('disabled');
-                    button.disabled = false;
-                }
-            });
+            updateSocialButtonStates(buttons, addedSocialTypes);
         }
 
         // Initialize
