@@ -341,6 +341,12 @@
             color: var(--accent-color);
             margin-left: 4px;
             font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .required-label {
+            border-left: 3px solid var(--accent-color);
+            padding-left: 8px;
         }
 
         .field-info {
@@ -390,7 +396,7 @@
                 <h2>Анкета участника</h2>
                 
                 <div class="form-group">
-                    <label for="fullName">Имя и Фамилия</label>
+                    <label for="fullName" class="required-field required-label">Имя и Фамилия</label>
                     <input type="text" id="fullName" name="fullName" required>
                 </div>
 
@@ -415,7 +421,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="city">Город</label>
+                    <label for="city" class="required-field required-label">Город</label>
                     <select id="city" name="city" class="searchable-select" required>
                         <option value="">Выберите город</option>
                         <!-- Cities will be populated by JavaScript -->
@@ -423,7 +429,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="industry">Сфера деятельности</label>
+                    <label for="industry" class="required-field required-label">Сфера деятельности</label>
                     <select id="industry" name="industry" class="searchable-select" required>
                         <option value="">Выберите сферу</option>
                         <!-- Industries will be populated by JavaScript -->
@@ -431,7 +437,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="role">Роль в компании/проекте</label>
+                    <label for="role" class="required-field required-label">Роль в компании/проекте</label>
                     <select id="role" name="role" class="searchable-select" required>
                         <option value="">Выберите роль</option>
                         <!-- Roles will be populated by JavaScript -->
@@ -447,13 +453,19 @@
                     <label for="lookingFor">Я ищу:</label>
                     <select id="lookingFor" name="lookingFor" class="searchable-select">
                         <option value="">Не выбрано</option>
-                        <option value="Инвестиции">💸 Инвестиции — ищу инвестора или финансирование</option>
-                        <option value="Партнеров">🤝 Партнёров — для запуска или масштабирования проекта</option>
-                        <option value="Команду">👥 Команду / специалистов — ищу людей в команду</option>
-                        <option value="Продвижение">📢 Продвижение / PR — нуждаюсь в маркетинге или поддержке</option>
-                        <option value="Клиентов">📦 Клиентов / продажи — ищу каналы для увеличения продаж</option>
-                        <option value="Менторство">🧠 Менторство / экспертизу — нужен наставник или совет</option>
+                        <option value="Инвестиции">Инвестиции — ищу инвестора или финансирование</option>
+                        <option value="Партнеров">Партнёров — для запуска или масштабирования проекта</option>
+                        <option value="Команду">Команду / специалистов — ищу людей в команду</option>
+                        <option value="Продвижение">Продвижение / PR — нуждаюсь в маркетинге или поддержке</option>
+                        <option value="Клиентов">Клиентов / продажи — ищу каналы для увеличения продаж</option>
+                        <option value="Менторство">Менторство / экспертизу — нужен наставник или совет</option>
+                        <option value="Другое">Другое</option>
                     </select>
+                </div>
+
+                <div class="form-group" id="lookingForOtherGroup" style="display: none;">
+                    <label for="lookingForOther">Уточните, что именно вы ищете:</label>
+                    <input type="text" id="lookingForOther" name="lookingForOther" class="single-line">
                 </div>
 
                 <div class="form-group">
@@ -517,6 +529,11 @@
                 <div class="form-group">
                     <label for="hobbies">Ваши хобби/увлечения</label>
                     <textarea id="hobbies" name="hobbies" rows="3" placeholder="Расскажите о ваших увлечениях"></textarea>
+                </div>
+
+                <div class="field-info">
+                    <span class="field-info-icon">ℹ️</span>
+                    <span>Поля, отмеченные звездочкой (*), обязательны для заполнения</span>
                 </div>
             </div>
         </form>
@@ -776,10 +793,37 @@
             const parentContainer = container.closest('.social-container');
             const buttons = parentContainer.querySelectorAll('.social-button');
             
+            // Массив для отслеживания добавленных соцсетей
+            const addedSocialTypes = [];
+            
+            // Функция для проверки уже добавленных соцсетей
+            function updateButtonStates() {
+                buttons.forEach(button => {
+                    const socialType = button.getAttribute('data-social');
+                    if (addedSocialTypes.includes(socialType)) {
+                        button.classList.add('disabled');
+                        button.disabled = true;
+                    } else {
+                        button.classList.remove('disabled');
+                        button.disabled = false;
+                    }
+                });
+            }
+            
             buttons.forEach(button => {
                 button.addEventListener('click', function() {
                     const socialType = this.getAttribute('data-social');
                     const socialLabel = this.textContent.trim();
+                    
+                    // Проверяем, не добавлена ли уже эта соцсеть
+                    if (addedSocialTypes.includes(socialType)) {
+                        // Если соцсеть уже добавлена, показываем уведомление и выходим
+                        alert(`Вы уже добавили ${socialLabel}. Можно добавить только одну ссылку для каждой социальной сети.`);
+                        return;
+                    }
+                    
+                    // Добавляем тип соцсети в массив
+                    addedSocialTypes.push(socialType);
                     
                     // Создаем уникальный ID для поля
                     const fieldId = `${containerId}_${socialType}_${Date.now()}`;
@@ -798,8 +842,18 @@
                     // Добавляем обработчик для удаления
                     const removeButton = container.querySelector(`#${fieldId}`).nextElementSibling;
                     removeButton.addEventListener('click', function() {
-                        this.closest('.social-field').remove();
+                        const field = this.closest('.social-field');
+                        const socialType = field.getAttribute('data-social');
+                        
+                        // Удаляем тип соцсети из массива
+                        const index = addedSocialTypes.indexOf(socialType);
+                        if (index > -1) {
+                            addedSocialTypes.splice(index, 1);
+                        }
+                        
+                        field.remove();
                         updateSocialData(container, hiddenInput);
+                        updateButtonStates(); // Обновляем состояние кнопок
                         saveFormData();
                     });
                     
@@ -811,9 +865,20 @@
                     });
                     
                     updateSocialData(container, hiddenInput);
+                    updateButtonStates(); // Обновляем состояние кнопок
                     saveFormData();
                 });
             });
+            
+            // Добавляем стили для отключенных кнопок
+            const style = document.createElement('style');
+            style.textContent = `
+                .social-button.disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+            `;
+            document.head.appendChild(style);
         }
         
         // Обновление данных социальных сетей
@@ -842,6 +907,7 @@
                 industry: document.getElementById('industry').value,
                 role: document.getElementById('role').value,
                 lookingFor: document.getElementById('lookingFor').value,
+                lookingForOther: document.getElementById('lookingForOther').value,
                 companyWebsite: document.getElementById('companyWebsite').value,
                 addCompanySocial: document.getElementById('addCompanySocial').checked,
                 companySocial: document.getElementById('companySocial').value,
@@ -869,6 +935,12 @@
                 // Заполняем поле "Я ищу"
                 if (formData.lookingFor) {
                     $('#lookingFor').val(formData.lookingFor).trigger('change');
+                    
+                    // Если выбрано "Другое", показываем поле для уточнения
+                    if (formData.lookingFor === 'Другое') {
+                        document.getElementById('lookingForOtherGroup').style.display = 'block';
+                        document.getElementById('lookingForOther').value = formData.lookingForOther || '';
+                    }
                 }
                 
                 // Для select2 нужно использовать специальный метод
@@ -923,12 +995,18 @@
             // Очищаем контейнер
             container.innerHTML = '';
             
+            // Массив для отслеживания добавленных соцсетей
+            const addedSocialTypes = [];
+            
             const socialItems = socialData.split('\n');
             socialItems.forEach(item => {
                 if (!item) return;
                 
                 const [socialType, value] = item.split(':');
                 if (!socialType || !value) return;
+                
+                // Добавляем тип соцсети в массив
+                addedSocialTypes.push(socialType);
                 
                 // Находим соответствующую кнопку и получаем ее текст
                 let socialLabel = socialType;
@@ -955,8 +1033,30 @@
                 // Добавляем обработчик для удаления
                 const removeButton = container.querySelector(`#${fieldId}`).nextElementSibling;
                 removeButton.addEventListener('click', function() {
-                    this.closest('.social-field').remove();
+                    const field = this.closest('.social-field');
+                    const fieldSocialType = field.getAttribute('data-social');
+                    
+                    // Удаляем тип соцсети из массива
+                    const index = addedSocialTypes.indexOf(fieldSocialType);
+                    if (index > -1) {
+                        addedSocialTypes.splice(index, 1);
+                    }
+                    
+                    field.remove();
                     updateSocialData(container, hiddenInput);
+                    
+                    // Обновляем состояние кнопок
+                    buttons.forEach(button => {
+                        const btnSocialType = button.getAttribute('data-social');
+                        if (addedSocialTypes.includes(btnSocialType)) {
+                            button.classList.add('disabled');
+                            button.disabled = true;
+                        } else {
+                            button.classList.remove('disabled');
+                            button.disabled = false;
+                        }
+                    });
+                    
                     saveFormData();
                 });
                 
@@ -966,6 +1066,18 @@
                     updateSocialData(container, hiddenInput);
                     saveFormData();
                 });
+            });
+            
+            // Обновляем состояние кнопок после восстановления
+            buttons.forEach(button => {
+                const btnSocialType = button.getAttribute('data-social');
+                if (addedSocialTypes.includes(btnSocialType)) {
+                    button.classList.add('disabled');
+                    button.disabled = true;
+                } else {
+                    button.classList.remove('disabled');
+                    button.disabled = false;
+                }
             });
         }
 
@@ -983,6 +1095,21 @@
                 width: '100%',
                 placeholder: 'Начните вводить для поиска...',
                 allowClear: true
+            });
+            
+            // Обработчик для поля "Я ищу" -> "Другое"
+            $('#lookingFor').on('change', function() {
+                const lookingForValue = $(this).val();
+                const lookingForOtherGroup = document.getElementById('lookingForOtherGroup');
+                
+                if (lookingForValue === 'Другое') {
+                    lookingForOtherGroup.style.display = 'block';
+                } else {
+                    lookingForOtherGroup.style.display = 'none';
+                    document.getElementById('lookingForOther').value = '';
+                }
+                
+                saveFormData();
             });
             
             handlePhotoUpload();
@@ -1099,6 +1226,7 @@
             formData.append('industry', document.getElementById('industry').value);
             formData.append('role', document.getElementById('role').value);
             formData.append('lookingFor', document.getElementById('lookingFor').value || '');
+            formData.append('lookingForOther', document.getElementById('lookingForOther').value || '');
             formData.append('companyWebsite', document.getElementById('companyWebsite').value || '');
             
             // Добавляем социальные сети только если они включены
