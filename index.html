@@ -840,6 +840,61 @@
             // Массив для отслеживания добавленных соцсетей
             const addedSocialTypes = [];
             
+            // Функция для проверки и автодополнения URL
+            function validateAndFormatUrl(input, socialType) {
+                let value = input.value.trim();
+                
+                // Если значение не пустое и не содержит http:// или https://
+                if (value && !value.startsWith('http://') && !value.startsWith('https://')) {
+                    // Добавляем префикс в зависимости от типа соцсети
+                    let prefix = '';
+                    
+                    switch(socialType) {
+                        case 'telegram':
+                            if (value.startsWith('@')) {
+                                prefix = 'https://t.me/';
+                                value = value.substring(1); // Убираем @ если он есть
+                            } else if (value.startsWith('t.me/')) {
+                                prefix = 'https://';
+                            } else if (!value.includes('t.me/')) {
+                                prefix = 'https://t.me/';
+                            }
+                            break;
+                        case 'youtube':
+                            if (value.startsWith('youtube.com/')) {
+                                prefix = 'https://';
+                            } else if (!value.includes('youtube.com/')) {
+                                prefix = 'https://youtube.com/';
+                            }
+                            break;
+                        case 'instagram':
+                            if (value.startsWith('@')) {
+                                prefix = 'https://instagram.com/';
+                                value = value.substring(1); // Убираем @ если он есть
+                            } else if (value.startsWith('instagram.com/')) {
+                                prefix = 'https://';
+                            } else if (!value.includes('instagram.com/')) {
+                                prefix = 'https://instagram.com/';
+                            }
+                            break;
+                        case 'vk':
+                            if (value.startsWith('vk.com/')) {
+                                prefix = 'https://';
+                            } else if (!value.includes('vk.com/')) {
+                                prefix = 'https://vk.com/';
+                            }
+                            break;
+                        default:
+                            prefix = 'https://';
+                    }
+                    
+                    // Устанавливаем отформатированное значение
+                    return prefix + value;
+                }
+                
+                return value;
+            }
+            
             // Функция для проверки уже добавленных соцсетей
             function updateButtonStates() {
                 buttons.forEach(button => {
@@ -872,11 +927,28 @@
                     // Создаем уникальный ID для поля
                     const fieldId = `${containerId}_${socialType}_${Date.now()}`;
                     
+                    // Устанавливаем подсказку в зависимости от типа соцсети
+                    let placeholder = "https://";
+                    switch(socialType) {
+                        case 'telegram':
+                            placeholder = "https://t.me/username или @username";
+                            break;
+                        case 'instagram':
+                            placeholder = "https://instagram.com/username или @username";
+                            break;
+                        case 'youtube':
+                            placeholder = "https://youtube.com/...";
+                            break;
+                        case 'vk':
+                            placeholder = "https://vk.com/...";
+                            break;
+                    }
+                    
                     // Создаем новое поле
                     const fieldHtml = `
                         <div class="social-field" data-social="${socialType}">
                             <span>${socialLabel}:</span>
-                            <input type="text" id="${fieldId}" placeholder="https://" class="social-input">
+                            <input type="text" id="${fieldId}" placeholder="${placeholder}" class="social-input">
                             <button type="button" class="remove-button">✕</button>
                         </div>
                     `;
@@ -901,11 +973,26 @@
                         saveFormData();
                     });
                     
-                    // Добавляем обработчик для сохранения
+                    // Добавляем обработчик для сохранения и форматирования
                     const input = document.getElementById(fieldId);
                     input.addEventListener('input', function() {
                         updateSocialData(container, hiddenInput);
                         saveFormData();
+                    });
+                    
+                    // Добавляем обработчик для автодополнения при потере фокуса
+                    input.addEventListener('blur', function() {
+                        const currentValue = this.value;
+                        const formattedValue = validateAndFormatUrl({ 
+                            value: currentValue, 
+                            trim: () => currentValue.trim() 
+                        }, socialType);
+                        
+                        if (formattedValue !== currentValue) {
+                            this.value = formattedValue;
+                            updateSocialData(container, hiddenInput);
+                            saveFormData();
+                        }
                     });
                     
                     updateSocialData(container, hiddenInput);
@@ -1103,12 +1190,73 @@
             // Массив для отслеживания добавленных соцсетей
             const addedSocialTypes = [];
             
+            // Функция для проверки и автодополнения URL
+            function validateAndFormatUrl(input, socialType) {
+                let value = input.value.trim();
+                
+                // Если значение не пустое и не содержит http:// или https://
+                if (value && !value.startsWith('http://') && !value.startsWith('https://')) {
+                    // Добавляем префикс в зависимости от типа соцсети
+                    let prefix = '';
+                    
+                    switch(socialType) {
+                        case 'telegram':
+                            if (value.startsWith('@')) {
+                                prefix = 'https://t.me/';
+                                value = value.substring(1); // Убираем @ если он есть
+                            } else if (value.startsWith('t.me/')) {
+                                prefix = 'https://';
+                            } else if (!value.includes('t.me/')) {
+                                prefix = 'https://t.me/';
+                            }
+                            break;
+                        case 'youtube':
+                            if (value.startsWith('youtube.com/')) {
+                                prefix = 'https://';
+                            } else if (!value.includes('youtube.com/')) {
+                                prefix = 'https://youtube.com/';
+                            }
+                            break;
+                        case 'instagram':
+                            if (value.startsWith('@')) {
+                                prefix = 'https://instagram.com/';
+                                value = value.substring(1); // Убираем @ если он есть
+                            } else if (value.startsWith('instagram.com/')) {
+                                prefix = 'https://';
+                            } else if (!value.includes('instagram.com/')) {
+                                prefix = 'https://instagram.com/';
+                            }
+                            break;
+                        case 'vk':
+                            if (value.startsWith('vk.com/')) {
+                                prefix = 'https://';
+                            } else if (!value.includes('vk.com/')) {
+                                prefix = 'https://vk.com/';
+                            }
+                            break;
+                        default:
+                            prefix = 'https://';
+                    }
+                    
+                    // Устанавливаем отформатированное значение
+                    return prefix + value;
+                }
+                
+                return value;
+            }
+            
             const socialItems = socialData.split('\n');
             socialItems.forEach(item => {
                 if (!item) return;
                 
                 const [socialType, value] = item.split(':');
                 if (!socialType || !value) return;
+                
+                // Проверяем и форматируем URL
+                const formattedValue = validateAndFormatUrl(
+                    { value: value, trim: () => value.trim() },
+                    socialType
+                );
                 
                 // Добавляем тип соцсети в массив
                 addedSocialTypes.push(socialType);
@@ -1124,11 +1272,28 @@
                 // Создаем уникальный ID для поля
                 const fieldId = `${containerId}_${socialType}_${Date.now()}`;
                 
+                // Устанавливаем подсказку в зависимости от типа соцсети
+                let placeholder = "https://";
+                switch(socialType) {
+                    case 'telegram':
+                        placeholder = "https://t.me/username или @username";
+                        break;
+                    case 'instagram':
+                        placeholder = "https://instagram.com/username или @username";
+                        break;
+                    case 'youtube':
+                        placeholder = "https://youtube.com/...";
+                        break;
+                    case 'vk':
+                        placeholder = "https://vk.com/...";
+                        break;
+                }
+                
                 // Создаем новое поле
                 const fieldHtml = `
                     <div class="social-field" data-social="${socialType}">
                         <span>${socialLabel}:</span>
-                        <input type="text" id="${fieldId}" placeholder="https://" class="social-input" value="${value}">
+                        <input type="text" id="${fieldId}" placeholder="${placeholder}" class="social-input" value="${formattedValue}">
                         <button type="button" class="remove-button">✕</button>
                     </div>
                 `;
@@ -1170,6 +1335,21 @@
                 input.addEventListener('input', function() {
                     updateSocialData(container, hiddenInput);
                     saveFormData();
+                });
+                
+                // Добавляем обработчик для автодополнения при потере фокуса
+                input.addEventListener('blur', function() {
+                    const currentValue = this.value;
+                    const formattedValue = validateAndFormatUrl({ 
+                        value: currentValue, 
+                        trim: () => currentValue.trim() 
+                    }, socialType);
+                    
+                    if (formattedValue !== currentValue) {
+                        this.value = formattedValue;
+                        updateSocialData(container, hiddenInput);
+                        saveFormData();
+                    }
                 });
             });
             
