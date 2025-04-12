@@ -845,7 +845,7 @@
             const fieldHtml = `
                 <div class="social-field" data-social="${socialType}">
                     <span>${socialLabel}:</span>
-                    <input type="text" id="${fieldId}" placeholder="https://" class="social-input" value="${value}">
+                    <input type="text" id="${fieldId}" class="social-input" value="${value}">
                     <button type="button" class="remove-button">✕</button>
                 </div>
             `;
@@ -933,7 +933,7 @@
             socialFields.forEach(field => {
                 const socialType = field.getAttribute('data-social');
                 const input = field.querySelector('input');
-                const value = input.value.trim();
+                const value = input.value;
                 
                 if (value) {
                     socialData.push(`${socialType}:${value}`);
@@ -1429,13 +1429,13 @@
             
             // Добавляем социальные сети только если они включены
             if (document.getElementById('addCompanySocial').checked) {
-                formData.append('companySocial', document.getElementById('companySocial').value || '');
+                formData.append('companySocial', document.getElementById('companySocial').value);
             } else {
                 formData.append('companySocial', '');
             }
             
             if (document.getElementById('addPersonalSocial').checked) {
-                formData.append('personalSocial', document.getElementById('personalSocial').value || '');
+                formData.append('personalSocial', document.getElementById('personalSocial').value);
             } else {
                 formData.append('personalSocial', '');
             }
@@ -1525,6 +1525,34 @@
                 console.error('Error:', error);
                 alert('Произошла ошибка при отправке анкеты. Пожалуйста, попробуйте позже.');
             }
+        }
+
+        function fillForm(data) {
+            // ... existing code ...
+            
+            // Заполняем социальные сети компании
+            if (data.companySocial && data.companySocial !== '') {
+                document.getElementById('addCompanySocial').checked = true;
+                document.getElementById('companySocialContainer').style.display = 'block';
+                document.getElementById('companySocial').value = data.companySocial;
+                restoreSocialFields('companySocialFields', 'companySocial', data.companySocial);
+            } else {
+                document.getElementById('addCompanySocial').checked = false;
+                document.getElementById('companySocialContainer').style.display = 'none';
+            }
+            
+            // Заполняем личные социальные сети
+            if (data.personalSocial && data.personalSocial !== '') {
+                document.getElementById('addPersonalSocial').checked = true;
+                document.getElementById('personalSocialContainer').style.display = 'block';
+                document.getElementById('personalSocial').value = data.personalSocial;
+                restoreSocialFields('personalSocialFields', 'personalSocial', data.personalSocial);
+            } else {
+                document.getElementById('addPersonalSocial').checked = false;
+                document.getElementById('personalSocialContainer').style.display = 'none';
+            }
+            
+            // ... existing code ...
         }
     </script>
 </body>
