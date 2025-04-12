@@ -235,6 +235,17 @@
             padding: 12px !important;
         }
 
+        .error-field {
+            border: 1px solid #ff3333 !important;
+            box-shadow: 0 0 5px rgba(255, 51, 51, 0.5);
+        }
+
+        /* Удаление класса ошибки при фокусе */
+        input:focus, textarea:focus, .select2-container--focus .select2-selection {
+            border-color: var(--accent-color) !important;
+            box-shadow: none;
+        }
+
         @media (max-width: 360px) {
             .container {
                 padding: 16px;
@@ -265,7 +276,7 @@
                 <h2>Анкета участника</h2>
                 
                 <div class="form-group">
-                    <label for="fullName">ФИО</label>
+                    <label for="fullName">Имя и Фамилия</label>
                     <input type="text" id="fullName" name="fullName" required>
                 </div>
 
@@ -315,17 +326,17 @@
 
                 <div class="form-group">
                     <label for="companyWebsite">Сайт Вашей компании/проекта</label>
-                    <input type="url" id="companyWebsite" name="companyWebsite" placeholder="https://">
+                    <textarea id="companyWebsite" name="companyWebsite" rows="2" placeholder="https://"></textarea>
                 </div>
 
                 <div class="form-group">
                     <label for="companySocial">Социальные сети Вашей компании</label>
-                    <input type="text" id="companySocial" name="companySocial" placeholder="Ссылки на соц. сети">
+                    <textarea id="companySocial" name="companySocial" rows="3" placeholder="Ссылки на соц. сети (каждая ссылка с новой строки)"></textarea>
                 </div>
 
                 <div class="form-group">
                     <label for="personalSocial">Ваши социальные сети</label>
-                    <input type="text" id="personalSocial" name="personalSocial" placeholder="Ссылки на ваши соц. сети">
+                    <textarea id="personalSocial" name="personalSocial" rows="3" placeholder="Ссылки на ваши соц. сети (каждая ссылка с новой строки)"></textarea>
                 </div>
 
                 <div class="form-group">
@@ -366,7 +377,7 @@
             "Севастополь", "Симферополь", "Смоленск", "Сочи", "Ставрополь", "Стерлитамак",
             "Сургут", "Сыктывкар", "Тамбов", "Тверь", "Томск", "Тула", "Тюмень", "Улан-Удэ",
             "Ульяновск", "Уссурийск", "Хабаровск", "Ханты-Мансийск", "Чебоксары", "Чита",
-            "Элиста", "Южно-Сахалинск", "Якутск", "Ярославль"
+            "Элиста", "Южно-Сахалинск", "Якутск", "Ярославль", "Другое"
         ];
 
         // Industries data
@@ -384,7 +395,8 @@
             "Энергетика",
             "Агротех / Фермерство",
             "Финансы / Юриспруденция",
-            "Госуслуги / НКО"
+            "Госуслуги / НКО",
+            "Другое"
         ];
 
         // Roles data
@@ -396,7 +408,8 @@
             "Руководитель отдела / направления",
             "Предметный эксперт",
             "Фрилансер",
-            "Линейный сотрудник"
+            "Линейный сотрудник",
+            "Другое"
         ];
 
         // Populate select elements
@@ -496,9 +509,112 @@
             });
         }
 
+        // Validate form
+        function validateForm() {
+            const fullName = document.getElementById('fullName').value.trim();
+            const city = document.getElementById('city').value;
+            const industry = document.getElementById('industry').value;
+            const role = document.getElementById('role').value;
+            
+            let isValid = true;
+            let errorMessage = 'Пожалуйста, заполните обязательные поля:\n';
+            
+            // Проверяем все обязательные поля
+            if (!fullName) {
+                document.getElementById('fullName').classList.add('error-field');
+                errorMessage += '- Имя и Фамилия\n';
+                isValid = false;
+            }
+            
+            if (!city) {
+                const cityElement = document.querySelector(`.select2-selection[aria-labelledby*="select2-city-container"]`);
+                if (cityElement) cityElement.classList.add('error-field');
+                errorMessage += '- Город\n';
+                isValid = false;
+            }
+            
+            if (!industry) {
+                const industryElement = document.querySelector(`.select2-selection[aria-labelledby*="select2-industry-container"]`);
+                if (industryElement) industryElement.classList.add('error-field');
+                errorMessage += '- Сфера деятельности\n';
+                isValid = false;
+            }
+            
+            if (!role) {
+                const roleElement = document.querySelector(`.select2-selection[aria-labelledby*="select2-role-container"]`);
+                if (roleElement) roleElement.classList.add('error-field');
+                errorMessage += '- Роль в компании/проекте\n';
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                alert(errorMessage);
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Save form data to localStorage
+        function saveFormData() {
+            const formData = {
+                fullName: document.getElementById('fullName').value,
+                city: document.getElementById('city').value,
+                industry: document.getElementById('industry').value,
+                role: document.getElementById('role').value,
+                companyWebsite: document.getElementById('companyWebsite').value,
+                companySocial: document.getElementById('companySocial').value,
+                personalSocial: document.getElementById('personalSocial').value,
+                hobbies: document.getElementById('hobbies').value
+            };
+            
+            localStorage.setItem('hartmannFormData', JSON.stringify(formData));
+        }
+
+        // Load form data from localStorage
+        function loadFormData() {
+            const savedData = localStorage.getItem('hartmannFormData');
+            if (!savedData) return;
+            
+            try {
+                const formData = JSON.parse(savedData);
+                
+                // Заполняем текстовые поля
+                document.getElementById('fullName').value = formData.fullName || '';
+                document.getElementById('companyWebsite').value = formData.companyWebsite || '';
+                document.getElementById('companySocial').value = formData.companySocial || '';
+                document.getElementById('personalSocial').value = formData.personalSocial || '';
+                document.getElementById('hobbies').value = formData.hobbies || '';
+                
+                // Для select2 нужно использовать специальный метод
+                if (formData.city) {
+                    $('#city').val(formData.city).trigger('change');
+                }
+                
+                if (formData.industry) {
+                    $('#industry').val(formData.industry).trigger('change');
+                }
+                
+                if (formData.role) {
+                    $('#role').val(formData.role).trigger('change');
+                }
+            } catch (e) {
+                console.error('Ошибка при загрузке данных из localStorage:', e);
+            }
+        }
+
         // Form submission
         async function handleSubmit(e) {
             e.preventDefault();
+            
+            // Проверяем заполнение обязательных полей - если не прошло, то выходим
+            // Двойная проверка для большей надежности
+            if (!validateForm()) {
+                return;
+            }
+            
+            // Сохраняем данные в localStorage
+            saveFormData();
             
             // Отключаем кнопку на время отправки
             if (window.Telegram?.WebApp?.MainButton) {
@@ -509,14 +625,14 @@
             
             // Добавляем все текстовые поля
             formData.append('telegram_id', tg.initDataUnsafe?.user?.id || null);
-            formData.append('fullName', e.target.fullName.value);
-            formData.append('city', e.target.city.value);
-            formData.append('industry', e.target.industry.value);
-            formData.append('role', e.target.role.value);
-            formData.append('companyWebsite', e.target.companyWebsite.value || '');
-            formData.append('companySocial', e.target.companySocial.value || '');
-            formData.append('personalSocial', e.target.personalSocial.value || '');
-            formData.append('hobbies', e.target.hobbies.value || '');
+            formData.append('fullName', document.getElementById('fullName').value);
+            formData.append('city', document.getElementById('city').value);
+            formData.append('industry', document.getElementById('industry').value);
+            formData.append('role', document.getElementById('role').value);
+            formData.append('companyWebsite', document.getElementById('companyWebsite').value || '');
+            formData.append('companySocial', document.getElementById('companySocial').value || '');
+            formData.append('personalSocial', document.getElementById('personalSocial').value || '');
+            formData.append('hobbies', document.getElementById('hobbies').value || '');
 
             // Обрабатываем фото
             const photoInput = document.getElementById('photo');
@@ -572,6 +688,9 @@
                             tg.close();
                         }
                     }
+                    
+                    // Очищаем localStorage после успешной отправки
+                    localStorage.removeItem('hartmannFormData');
                 } else {
                     throw new Error(`Server response: ${await response.text()}`);
                 }
@@ -583,6 +702,21 @@
                 console.error('Error:', error);
                 alert('Произошла ошибка при отправке анкеты. Пожалуйста, попробуйте позже.');
             }
+        }
+
+        // Auto-save form data during input
+        function setupAutoSave() {
+            const inputs = document.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                input.addEventListener('change', saveFormData);
+                // Для текстовых полей также сохраняем при вводе
+                if (input.tagName === 'INPUT' || input.tagName === 'TEXTAREA') {
+                    input.addEventListener('input', saveFormData);
+                }
+            });
+            
+            // Для Select2 dropdown
+            $('.searchable-select').on('select2:select', saveFormData);
         }
 
         // Initialize
@@ -618,20 +752,71 @@
                 submitButton.remove();
             }
 
+            // Проверка заполненности обязательных полей и управление кнопкой
+            function checkRequiredFields() {
+                const fullName = document.getElementById('fullName').value.trim();
+                const city = document.getElementById('city').value;
+                const industry = document.getElementById('industry').value;
+                const role = document.getElementById('role').value;
+                
+                const allFilled = fullName && city && industry && role;
+                
+                if (window.Telegram?.WebApp?.MainButton) {
+                    if (allFilled) {
+                        window.Telegram.WebApp.MainButton.enable();
+                    } else {
+                        window.Telegram.WebApp.MainButton.disable();
+                    }
+                }
+            }
+
             // Настраиваем главную кнопку
             if (window.Telegram?.WebApp?.MainButton) {
                 const mainButton = window.Telegram.WebApp.MainButton;
                 mainButton.text = "Отправить анкету";
                 mainButton.color = "#ff6b00";
                 mainButton.textColor = "#ffffff";
+                mainButton.disable(); // Изначально кнопка неактивна
                 mainButton.show();
                 
                 // Привязываем отправку формы к нажатию на главную кнопку
                 mainButton.onClick(function() {
+                    // Если все проверки пройдены, отправляем форму
                     const form = document.getElementById('registrationForm');
                     form.dispatchEvent(new Event('submit'));
                 });
             }
+            
+            // Настраиваем обработчики событий для проверки полей
+            document.querySelectorAll('input, textarea').forEach(input => {
+                input.addEventListener('input', function() {
+                    this.classList.remove('error-field');
+                    checkRequiredFields();
+                });
+            });
+
+            // Для select2
+            $(document).on('select2:select', function(e) {
+                const selectId = e.target.id;
+                const element = document.querySelector(`.select2-selection[aria-labelledby*="select2-${selectId}-container"]`);
+                if (element) element.classList.remove('error-field');
+                checkRequiredFields();
+            });
+            
+            $(document).on('select2:open', function(e) {
+                const selectId = e.target.id;
+                const element = document.querySelector(`.select2-selection[aria-labelledby*="select2-${selectId}-container"]`);
+                if (element) element.classList.remove('error-field');
+            });
+            
+            // Загружаем данные из localStorage
+            loadFormData();
+            
+            // Настраиваем автосохранение
+            setupAutoSave();
+            
+            // Проверяем поля после загрузки данных
+            checkRequiredFields();
         });
     </script>
 </body>
