@@ -426,6 +426,9 @@
                         <option value="">Выберите город</option>
                         <!-- Cities will be populated by JavaScript -->
                     </select>
+                    <div id="cityOtherGroup" style="display: none; margin-top: 10px;">
+                        <input type="text" id="cityOther" name="cityOther" placeholder="Укажите свой вариант" class="single-line">
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -434,6 +437,9 @@
                         <option value="">Выберите сферу</option>
                         <!-- Industries will be populated by JavaScript -->
                     </select>
+                    <div id="industryOtherGroup" style="display: none; margin-top: 10px;">
+                        <input type="text" id="industryOther" name="industryOther" placeholder="Укажите свой вариант" class="single-line">
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -442,11 +448,19 @@
                         <option value="">Выберите роль</option>
                         <!-- Roles will be populated by JavaScript -->
                     </select>
+                    <div id="roleOtherGroup" style="display: none; margin-top: 10px;">
+                        <input type="text" id="roleOther" name="roleOther" placeholder="Укажите свой вариант" class="single-line">
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="companyWebsite">Сайт Вашей компании/проекта</label>
-                    <input type="url" id="companyWebsite" name="companyWebsite" placeholder="https://" class="single-line">
+                    <label for="companyWebsite" class="required-field required-label">Сайт Вашей компании/проекта</label>
+                    <select id="companyWebsite" name="companyWebsite" class="searchable-select" required>
+                        <option value="">Выберите вариант</option>
+                        <option value="Нет сайта">Нет сайта</option>
+                        <option value="URL">Указать URL сайта</option>
+                    </select>
+                    <input type="url" id="companyWebsiteURL" name="companyWebsiteURL" placeholder="https://" class="single-line" style="display: none; margin-top: 10px;">
                 </div>
 
                 <div class="form-group">
@@ -705,8 +719,13 @@
         function validateForm() {
             const fullName = document.getElementById('fullName').value.trim();
             const city = document.getElementById('city').value;
+            const cityOther = document.getElementById('cityOther').value.trim();
             const industry = document.getElementById('industry').value;
+            const industryOther = document.getElementById('industryOther').value.trim();
             const role = document.getElementById('role').value;
+            const roleOther = document.getElementById('roleOther').value.trim();
+            const companyWebsite = document.getElementById('companyWebsite').value;
+            const companyWebsiteURL = document.getElementById('companyWebsiteURL');
             
             let isValid = true;
             let errorMessage = 'Пожалуйста, заполните обязательные поля:\n';
@@ -723,6 +742,10 @@
                 if (cityElement) cityElement.classList.add('error-field');
                 errorMessage += '- Город\n';
                 isValid = false;
+            } else if (city === 'Другое' && !cityOther) {
+                document.getElementById('cityOther').classList.add('error-field');
+                errorMessage += '- Уточните город\n';
+                isValid = false;
             }
             
             if (!industry) {
@@ -730,12 +753,33 @@
                 if (industryElement) industryElement.classList.add('error-field');
                 errorMessage += '- Сфера деятельности\n';
                 isValid = false;
+            } else if (industry === 'Другое' && !industryOther) {
+                document.getElementById('industryOther').classList.add('error-field');
+                errorMessage += '- Уточните сферу деятельности\n';
+                isValid = false;
             }
             
             if (!role) {
                 const roleElement = document.querySelector(`.select2-selection[aria-labelledby*="select2-role-container"]`);
                 if (roleElement) roleElement.classList.add('error-field');
                 errorMessage += '- Роль в компании/проекте\n';
+                isValid = false;
+            } else if (role === 'Другое' && !roleOther) {
+                document.getElementById('roleOther').classList.add('error-field');
+                errorMessage += '- Уточните роль в компании/проекте\n';
+                isValid = false;
+            }
+            
+            if (!companyWebsite) {
+                const websiteElement = document.querySelector(`.select2-selection[aria-labelledby*="select2-companyWebsite-container"]`);
+                if (websiteElement) websiteElement.classList.add('error-field');
+                errorMessage += '- Сайт Вашей компании/проекта\n';
+                isValid = false;
+            }
+            
+            if (companyWebsite === 'URL' && !companyWebsiteURL.value.trim()) {
+                companyWebsiteURL.classList.add('error-field');
+                errorMessage += '- URL сайта компании\n';
                 isValid = false;
             }
             
@@ -901,14 +945,51 @@
 
         // Save form data to localStorage
         function saveFormData() {
+            const companyWebsiteValue = document.getElementById('companyWebsite').value;
+            const websiteURLValue = companyWebsiteValue === 'URL' ? document.getElementById('companyWebsiteURL').value : '';
+            
+            // Обработка поля "Я ищу"
+            let lookingForValue = document.getElementById('lookingFor').value;
+            let lookingForOtherValue = '';
+            
+            if (lookingForValue === 'Другое') {
+                lookingForOtherValue = document.getElementById('lookingForOther').value || '';
+            }
+            
+            // Обработка других полей с возможностью "Другое"
+            let cityValue = document.getElementById('city').value;
+            let cityOtherValue = '';
+            
+            if (cityValue === 'Другое') {
+                cityOtherValue = document.getElementById('cityOther').value || '';
+            }
+            
+            let industryValue = document.getElementById('industry').value;
+            let industryOtherValue = '';
+            
+            if (industryValue === 'Другое') {
+                industryOtherValue = document.getElementById('industryOther').value || '';
+            }
+            
+            let roleValue = document.getElementById('role').value;
+            let roleOtherValue = '';
+            
+            if (roleValue === 'Другое') {
+                roleOtherValue = document.getElementById('roleOther').value || '';
+            }
+            
             const formData = {
                 fullName: document.getElementById('fullName').value,
-                city: document.getElementById('city').value,
-                industry: document.getElementById('industry').value,
-                role: document.getElementById('role').value,
-                lookingFor: document.getElementById('lookingFor').value,
-                lookingForOther: document.getElementById('lookingForOther').value,
-                companyWebsite: document.getElementById('companyWebsite').value,
+                city: cityValue,
+                cityOther: cityOtherValue,
+                industry: industryValue,
+                industryOther: industryOtherValue,
+                role: roleValue,
+                roleOther: roleOtherValue,
+                companyWebsite: companyWebsiteValue,
+                companyWebsiteURL: websiteURLValue,
+                lookingFor: lookingForValue,
+                lookingForOther: lookingForOtherValue,
                 addCompanySocial: document.getElementById('addCompanySocial').checked,
                 companySocial: document.getElementById('companySocial').value,
                 addPersonalSocial: document.getElementById('addPersonalSocial').checked,
@@ -929,8 +1010,45 @@
                 
                 // Заполняем текстовые поля
                 document.getElementById('fullName').value = formData.fullName || '';
-                document.getElementById('companyWebsite').value = formData.companyWebsite || '';
                 document.getElementById('hobbies').value = formData.hobbies || '';
+                
+                // Для поля сайта компании
+                if (formData.companyWebsite) {
+                    $('#companyWebsite').val(formData.companyWebsite).trigger('change');
+                    
+                    if (formData.companyWebsite === 'URL' && formData.companyWebsiteURL) {
+                        document.getElementById('companyWebsiteURL').value = formData.companyWebsiteURL;
+                        document.getElementById('companyWebsiteURL').style.display = 'block';
+                    }
+                }
+                
+                // Для полей с возможностью "Другое"
+                if (formData.city) {
+                    $('#city').val(formData.city).trigger('change');
+                    
+                    if (formData.city === 'Другое' && formData.cityOther) {
+                        document.getElementById('cityOther').value = formData.cityOther;
+                        document.getElementById('cityOtherGroup').style.display = 'block';
+                    }
+                }
+                
+                if (formData.industry) {
+                    $('#industry').val(formData.industry).trigger('change');
+                    
+                    if (formData.industry === 'Другое' && formData.industryOther) {
+                        document.getElementById('industryOther').value = formData.industryOther;
+                        document.getElementById('industryOtherGroup').style.display = 'block';
+                    }
+                }
+                
+                if (formData.role) {
+                    $('#role').val(formData.role).trigger('change');
+                    
+                    if (formData.role === 'Другое' && formData.roleOther) {
+                        document.getElementById('roleOther').value = formData.roleOther;
+                        document.getElementById('roleOtherGroup').style.display = 'block';
+                    }
+                }
                 
                 // Заполняем поле "Я ищу"
                 if (formData.lookingFor) {
@@ -941,19 +1059,6 @@
                         document.getElementById('lookingForOtherGroup').style.display = 'block';
                         document.getElementById('lookingForOther').value = formData.lookingForOther || '';
                     }
-                }
-                
-                // Для select2 нужно использовать специальный метод
-                if (formData.city) {
-                    $('#city').val(formData.city).trigger('change');
-                }
-                
-                if (formData.industry) {
-                    $('#industry').val(formData.industry).trigger('change');
-                }
-                
-                if (formData.role) {
-                    $('#role').val(formData.role).trigger('change');
                 }
                 
                 // Восстанавливаем данные социальных сетей компании
@@ -1112,6 +1217,51 @@
                 saveFormData();
             });
             
+            // Обработчик для поля "Город" -> "Другое"
+            $('#city').on('change', function() {
+                const cityValue = $(this).val();
+                const cityOtherGroup = document.getElementById('cityOtherGroup');
+                
+                if (cityValue === 'Другое') {
+                    cityOtherGroup.style.display = 'block';
+                } else {
+                    cityOtherGroup.style.display = 'none';
+                    document.getElementById('cityOther').value = '';
+                }
+                
+                saveFormData();
+            });
+            
+            // Обработчик для поля "Сфера деятельности" -> "Другое"
+            $('#industry').on('change', function() {
+                const industryValue = $(this).val();
+                const industryOtherGroup = document.getElementById('industryOtherGroup');
+                
+                if (industryValue === 'Другое') {
+                    industryOtherGroup.style.display = 'block';
+                } else {
+                    industryOtherGroup.style.display = 'none';
+                    document.getElementById('industryOther').value = '';
+                }
+                
+                saveFormData();
+            });
+            
+            // Обработчик для поля "Роль в компании/проекте" -> "Другое"
+            $('#role').on('change', function() {
+                const roleValue = $(this).val();
+                const roleOtherGroup = document.getElementById('roleOtherGroup');
+                
+                if (roleValue === 'Другое') {
+                    roleOtherGroup.style.display = 'block';
+                } else {
+                    roleOtherGroup.style.display = 'none';
+                    document.getElementById('roleOther').value = '';
+                }
+                
+                saveFormData();
+            });
+            
             handlePhotoUpload();
             
             const form = document.getElementById('registrationForm');
@@ -1133,10 +1283,33 @@
             function checkRequiredFields() {
                 const fullName = document.getElementById('fullName').value.trim();
                 const city = document.getElementById('city').value;
+                const cityOther = document.getElementById('cityOther').value.trim();
                 const industry = document.getElementById('industry').value;
+                const industryOther = document.getElementById('industryOther').value.trim();
                 const role = document.getElementById('role').value;
+                const roleOther = document.getElementById('roleOther').value.trim();
+                const companyWebsite = document.getElementById('companyWebsite').value;
+                const companyWebsiteURL = document.getElementById('companyWebsiteURL');
                 
-                const allFilled = fullName && city && industry && role;
+                let allFilled = fullName && city && industry && role && companyWebsite;
+                
+                // Дополнительные проверки для полей с опцией "Другое"
+                if (city === 'Другое') {
+                    allFilled = allFilled && cityOther;
+                }
+                
+                if (industry === 'Другое') {
+                    allFilled = allFilled && industryOther;
+                }
+                
+                if (role === 'Другое') {
+                    allFilled = allFilled && roleOther;
+                }
+                
+                // Дополнительная проверка URL сайта, если выбрана опция "URL"
+                if (companyWebsite === 'URL') {
+                    allFilled = allFilled && companyWebsiteURL.value.trim();
+                }
                 
                 if (window.Telegram?.WebApp?.MainButton) {
                     if (allFilled) {
@@ -1186,6 +1359,23 @@
                 if (element) element.classList.remove('error-field');
             });
             
+            // Обработчик для поля "Сайт компании"
+            $('#companyWebsite').on('change', function() {
+                const websiteValue = $(this).val();
+                const websiteURLInput = document.getElementById('companyWebsiteURL');
+                
+                if (websiteValue === 'URL') {
+                    websiteURLInput.style.display = 'block';
+                    websiteURLInput.required = true;
+                } else {
+                    websiteURLInput.style.display = 'none';
+                    websiteURLInput.required = false;
+                    websiteURLInput.value = '';
+                }
+                
+                saveFormData();
+            });
+            
             // Инициализируем обработку социальных сетей
             setupSocialNetworks();
             
@@ -1222,12 +1412,51 @@
             // Добавляем все текстовые поля
             formData.append('telegram_id', tg.initDataUnsafe?.user?.id || null);
             formData.append('fullName', document.getElementById('fullName').value);
-            formData.append('city', document.getElementById('city').value);
-            formData.append('industry', document.getElementById('industry').value);
-            formData.append('role', document.getElementById('role').value);
-            formData.append('lookingFor', document.getElementById('lookingFor').value || '');
-            formData.append('lookingForOther', document.getElementById('lookingForOther').value || '');
-            formData.append('companyWebsite', document.getElementById('companyWebsite').value || '');
+            
+            // Обработка поля "Город" с учетом опции "Другое"
+            const cityValue = document.getElementById('city').value;
+            if (cityValue === 'Другое') {
+                const cityOtherValue = document.getElementById('cityOther').value.trim();
+                formData.append('city', cityOtherValue || 'Другое');
+            } else {
+                formData.append('city', cityValue);
+            }
+            
+            // Обработка поля "Сфера деятельности" с учетом опции "Другое"
+            const industryValue = document.getElementById('industry').value;
+            if (industryValue === 'Другое') {
+                const industryOtherValue = document.getElementById('industryOther').value.trim();
+                formData.append('industry', industryOtherValue || 'Другое');
+            } else {
+                formData.append('industry', industryValue);
+            }
+            
+            // Обработка поля "Роль" с учетом опции "Другое"
+            const roleValue = document.getElementById('role').value;
+            if (roleValue === 'Другое') {
+                const roleOtherValue = document.getElementById('roleOther').value.trim();
+                formData.append('role', roleOtherValue || 'Другое');
+            } else {
+                formData.append('role', roleValue);
+            }
+            
+            // Добавляем данные о сайте компании
+            const companyWebsiteOption = document.getElementById('companyWebsite').value;
+            formData.append('companyWebsite', companyWebsiteOption);
+            
+            if (companyWebsiteOption === 'URL') {
+                formData.append('companyWebsiteURL', document.getElementById('companyWebsiteURL').value || '');
+            }
+            
+            // Обработка поля "Я ищу"
+            let lookingForValue = document.getElementById('lookingFor').value || '';
+            if (lookingForValue === 'Другое') {
+                const lookingForOther = document.getElementById('lookingForOther').value || '';
+                if (lookingForOther.trim()) {
+                    lookingForValue = lookingForOther;
+                }
+            }
+            formData.append('lookingFor', lookingForValue);
             
             // Добавляем социальные сети только если они включены
             if (document.getElementById('addCompanySocial').checked) {
