@@ -843,55 +843,7 @@
             // Функция для проверки и автодополнения URL
             function validateAndFormatUrl(input, socialType) {
                 let value = input.value.trim();
-                
-                // Если значение не пустое и не содержит http:// или https://
-                if (value && !value.startsWith('http://') && !value.startsWith('https://')) {
-                    // Добавляем префикс в зависимости от типа соцсети
-                    let prefix = '';
-                    
-                    switch(socialType) {
-                        case 'telegram':
-                            if (value.startsWith('@')) {
-                                prefix = 'https://t.me/';
-                                value = value.substring(1); // Убираем @ если он есть
-                            } else if (value.startsWith('t.me/')) {
-                                prefix = 'https://';
-                            } else if (!value.includes('t.me/')) {
-                                prefix = 'https://t.me/';
-                            }
-                            break;
-                        case 'youtube':
-                            if (value.startsWith('youtube.com/')) {
-                                prefix = 'https://';
-                            } else if (!value.includes('youtube.com/')) {
-                                prefix = 'https://youtube.com/';
-                            }
-                            break;
-                        case 'instagram':
-                            if (value.startsWith('@')) {
-                                prefix = 'https://instagram.com/';
-                                value = value.substring(1); // Убираем @ если он есть
-                            } else if (value.startsWith('instagram.com/')) {
-                                prefix = 'https://';
-                            } else if (!value.includes('instagram.com/')) {
-                                prefix = 'https://instagram.com/';
-                            }
-                            break;
-                        case 'vk':
-                            if (value.startsWith('vk.com/')) {
-                                prefix = 'https://';
-                            } else if (!value.includes('vk.com/')) {
-                                prefix = 'https://vk.com/';
-                            }
-                            break;
-                        default:
-                            prefix = 'https://';
-                    }
-                    
-                    // Устанавливаем отформатированное значение
-                    return prefix + value;
-                }
-                
+                // Просто возвращаем введенное пользователем значение, без какой-либо обработки
                 return value;
             }
             
@@ -1193,55 +1145,7 @@
             // Функция для проверки и автодополнения URL
             function validateAndFormatUrl(input, socialType) {
                 let value = input.value.trim();
-                
-                // Если значение не пустое и не содержит http:// или https://
-                if (value && !value.startsWith('http://') && !value.startsWith('https://')) {
-                    // Добавляем префикс в зависимости от типа соцсети
-                    let prefix = '';
-                    
-                    switch(socialType) {
-                        case 'telegram':
-                            if (value.startsWith('@')) {
-                                prefix = 'https://t.me/';
-                                value = value.substring(1); // Убираем @ если он есть
-                            } else if (value.startsWith('t.me/')) {
-                                prefix = 'https://';
-                            } else if (!value.includes('t.me/')) {
-                                prefix = 'https://t.me/';
-                            }
-                            break;
-                        case 'youtube':
-                            if (value.startsWith('youtube.com/')) {
-                                prefix = 'https://';
-                            } else if (!value.includes('youtube.com/')) {
-                                prefix = 'https://youtube.com/';
-                            }
-                            break;
-                        case 'instagram':
-                            if (value.startsWith('@')) {
-                                prefix = 'https://instagram.com/';
-                                value = value.substring(1); // Убираем @ если он есть
-                            } else if (value.startsWith('instagram.com/')) {
-                                prefix = 'https://';
-                            } else if (!value.includes('instagram.com/')) {
-                                prefix = 'https://instagram.com/';
-                            }
-                            break;
-                        case 'vk':
-                            if (value.startsWith('vk.com/')) {
-                                prefix = 'https://';
-                            } else if (!value.includes('vk.com/')) {
-                                prefix = 'https://vk.com/';
-                            }
-                            break;
-                        default:
-                            prefix = 'https://';
-                    }
-                    
-                    // Устанавливаем отформатированное значение
-                    return prefix + value;
-                }
-                
+                // Просто возвращаем введенное пользователем значение, без какой-либо обработки
                 return value;
             }
             
