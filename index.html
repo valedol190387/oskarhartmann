@@ -964,10 +964,10 @@
             });
         }
         
-        // Обновление данных социальных сетей - упрощенная версия
+        // Обновление данных социальных сетей - переделанная версия для сохранения в отдельные переменные
         function updateSocialData(container, hiddenInput) {
             const socialFields = container.querySelectorAll('.social-field');
-            const socialData = [];
+            const socialData = {};
             
             socialFields.forEach(field => {
                 const socialType = field.getAttribute('data-social');
@@ -975,11 +975,13 @@
                 const value = input.value;
                 
                 if (value) {
-                    socialData.push(`${socialType}:${value}`);
+                    // Сохраняем каждую соцсеть в отдельное поле объекта
+                    socialData[socialType] = value;
                 }
             });
             
-            hiddenInput.value = socialData.join('\n');
+            // Сохраняем данные в JSON формате в скрытое поле
+            hiddenInput.value = JSON.stringify(socialData);
             saveFormData();
         }
 
@@ -994,11 +996,25 @@
             }
             
             // Сохраняем значения социальных сетей
-            const companySocialValue = document.getElementById('companySocial').value;
-            const personalSocialValue = document.getElementById('personalSocial').value;
+            let companySocialData = {};
+            let personalSocialData = {};
             
-            console.log('Сохраняем социальные сети компании:', companySocialValue);
-            console.log('Сохраняем личные социальные сети:', personalSocialValue);
+            try {
+                const companySocialValue = document.getElementById('companySocial').value;
+                if (companySocialValue) {
+                    companySocialData = JSON.parse(companySocialValue);
+                }
+                
+                const personalSocialValue = document.getElementById('personalSocial').value;
+                if (personalSocialValue) {
+                    personalSocialData = JSON.parse(personalSocialValue);
+                }
+            } catch (e) {
+                console.error('Ошибка при парсинге данных социальных сетей:', e);
+            }
+            
+            console.log('Сохраняем социальные сети компании:', companySocialData);
+            console.log('Сохраняем личные социальные сети:', personalSocialData);
             
             // Обработка поля "Я ищу"
             let lookingFor = document.getElementById('lookingFor').value;
@@ -1038,9 +1054,9 @@
                 companyWebsite: companyWebsite,
                 lookingFor: lookingFor,
                 addCompanySocial: document.getElementById('addCompanySocial').checked,
-                companySocial: companySocialValue,
+                companySocialData: companySocialData,
                 addPersonalSocial: document.getElementById('addPersonalSocial').checked,
-                personalSocial: personalSocialValue,
+                personalSocialData: personalSocialData,
                 addAbout: showAbout,
                 about: about,
                 hobbies: document.getElementById('hobbies').value
@@ -1167,25 +1183,25 @@
                 
                 // Восстанавливаем данные социальных сетей компании
                 if (formData.addCompanySocial) {
-                    console.log('Восстанавливаем социальные сети компании:', formData.companySocial);
+                    console.log('Восстанавливаем социальные сети компании:', formData.companySocialData);
                     document.getElementById('addCompanySocial').checked = true;
                     document.getElementById('companySocialContainer').style.display = 'block';
                     
-                    if (formData.companySocial) {
-                        document.getElementById('companySocial').value = formData.companySocial;
-                        restoreSocialFields('companySocialFields', 'companySocial', formData.companySocial);
+                    if (formData.companySocialData) {
+                        document.getElementById('companySocial').value = JSON.stringify(formData.companySocialData);
+                        restoreSocialFields('companySocialFields', 'companySocial', formData.companySocialData);
                     }
                 }
                 
                 // Восстанавливаем данные личных социальных сетей
                 if (formData.addPersonalSocial) {
-                    console.log('Восстанавливаем личные социальные сети:', formData.personalSocial);
+                    console.log('Восстанавливаем личные социальные сети:', formData.personalSocialData);
                     document.getElementById('addPersonalSocial').checked = true;
                     document.getElementById('personalSocialContainer').style.display = 'block';
                     
-                    if (formData.personalSocial) {
-                        document.getElementById('personalSocial').value = formData.personalSocial;
-                        restoreSocialFields('personalSocialFields', 'personalSocial', formData.personalSocial);
+                    if (formData.personalSocialData) {
+                        document.getElementById('personalSocial').value = JSON.stringify(formData.personalSocialData);
+                        restoreSocialFields('personalSocialFields', 'personalSocial', formData.personalSocialData);
                     }
                 }
                 
@@ -1204,7 +1220,7 @@
             }
         }
         
-        // Восстановление полей социальных сетей - оптимизированная версия
+        // Восстановление полей социальных сетей - переделанная версия для работы с отдельными полями
         function restoreSocialFields(containerId, hiddenInputId, socialData) {
             if (!socialData) return;
             
@@ -1221,11 +1237,21 @@
             // Массив для отслеживания добавленных соцсетей
             const addedSocialTypes = [];
             
-            const socialItems = socialData.split('\n');
-            socialItems.forEach(item => {
-                if (!item) return;
-                
-                const [socialType, value] = item.split(':');
+            let socialItems = {};
+            try {
+                // Попытка парсинга JSON
+                if (typeof socialData === 'string') {
+                    socialItems = JSON.parse(socialData);
+                } else if (typeof socialData === 'object') {
+                    socialItems = socialData;
+                }
+            } catch (e) {
+                console.error('Ошибка при парсинге данных социальных сетей:', e);
+                return;
+            }
+            
+            // Перебираем все поля в объекте socialItems
+            Object.entries(socialItems).forEach(([socialType, value]) => {
                 if (!socialType || !value) return;
                 
                 console.log('Восстанавливаем соцсеть:', socialType, 'со значением:', value);
@@ -1558,16 +1584,55 @@
                 formData.append('about', '');
             }
             
-            // Добавляем социальные сети только если они включены
+            // Добавляем социальные сети компании - каждую в отдельную переменную
             if (document.getElementById('addCompanySocial').checked) {
-                formData.append('companySocial', document.getElementById('companySocial').value);
+                try {
+                    const companySocialValue = document.getElementById('companySocial').value;
+                    if (companySocialValue) {
+                        // Парсим JSON и преобразуем в отдельные параметры
+                        const companySocialData = JSON.parse(companySocialValue);
+                        
+                        // Очищаем формат для обратной совместимости
+                        // НЕ ИСПОЛЬЗУЕМ старый формат с разделителями, только JSON!
+                        formData.append('companySocial', JSON.stringify(companySocialData));
+                        
+                        // Добавляем каждую соц сеть в отдельную переменную с префиксом company_
+                        Object.entries(companySocialData).forEach(([socialType, value]) => {
+                            console.log(`Добавляем соцсеть компании: company_${socialType} = ${value}`);
+                            formData.append(`company_${socialType}`, value);
+                        });
+                    }
+                } catch (e) {
+                    console.error('Ошибка при парсинге социальных сетей компании:', e);
+                }
             } else {
+                // Если соцсети отключены, устанавливаем пустые значения
                 formData.append('companySocial', '');
             }
             
+            // Добавляем личные социальные сети - каждую в отдельную переменную
             if (document.getElementById('addPersonalSocial').checked) {
-                formData.append('personalSocial', document.getElementById('personalSocial').value);
+                try {
+                    const personalSocialValue = document.getElementById('personalSocial').value;
+                    if (personalSocialValue) {
+                        // Парсим JSON и преобразуем в отдельные параметры
+                        const personalSocialData = JSON.parse(personalSocialValue);
+                        
+                        // Очищаем формат для обратной совместимости
+                        // НЕ ИСПОЛЬЗУЕМ старый формат с разделителями, только JSON!
+                        formData.append('personalSocial', JSON.stringify(personalSocialData));
+                        
+                        // Добавляем каждую соц сеть в отдельную переменную с префиксом personal_
+                        Object.entries(personalSocialData).forEach(([socialType, value]) => {
+                            console.log(`Добавляем личную соцсеть: personal_${socialType} = ${value}`);
+                            formData.append(`personal_${socialType}`, value);
+                        });
+                    }
+                } catch (e) {
+                    console.error('Ошибка при парсинге личных социальных сетей:', e);
+                }
             } else {
+                // Если соцсети отключены, устанавливаем пустые значения
                 formData.append('personalSocial', '');
             }
             
