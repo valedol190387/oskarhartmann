@@ -1700,41 +1700,12 @@
                                 text: 'Отлично!'
                             }]
                         }, function() {
-                            // Попробуем прямое перенаправление в крайнем случае
-                            try {
-                                // Сначала пробуем обычный способ
-                                window.open('https://t.me/unicorncamp_hartmann_bot/unicorncampmain', '_blank');
-                                
-                                // В случае неудачи - пробуем прямое перенаправление
-                                setTimeout(function() {
-                                    const checkWindowOpen = confirm("Открыть ссылку в новой вкладке?");
-                                    if (checkWindowOpen) {
-                                        location.href = 'https://t.me/unicorncamp_hartmann_bot/unicorncampmain';
-                                    }
-                                }, 1000);
-                            } catch (e) {
-                                console.error("Ошибка при открытии ссылки:", e);
-                                location.href = 'https://t.me/unicorncamp_hartmann_bot/unicorncampmain';
-                            }
+                            window.open('https://t.me/unicorncamp_hartmann_bot/unicorncampmain', '_blank');
                             // НЕ закрываем WebApp, чтобы сохранить данные
                         });
                     } else {
                         alert('Анкета успешно отправлена!');
-                        try {
-                            // Сначала пробуем обычный способ
-                            window.open('https://t.me/unicorncamp_hartmann_bot/unicorncampmain', '_blank');
-                            
-                            // В случае неудачи - пробуем прямое перенаправление
-                            setTimeout(function() {
-                                const checkWindowOpen = confirm("Открыть ссылку в новой вкладке?");
-                                if (checkWindowOpen) {
-                                    location.href = 'https://t.me/unicorncamp_hartmann_bot/unicorncampmain';
-                                }
-                            }, 1000);
-                        } catch (e) {
-                            console.error("Ошибка при открытии ссылки:", e);
-                            location.href = 'https://t.me/unicorncamp_hartmann_bot/unicorncampmain';
-                        }
+                        window.open('https://t.me/unicorncamp_hartmann_bot/unicorncampmain', '_blank');
                     }
                     
                     // НЕ очищаем localStorage после отправки
