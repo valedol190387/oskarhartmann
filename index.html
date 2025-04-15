@@ -958,10 +958,37 @@
                         updateSocialData(container, hiddenInput);
                     });
                     
+                    // Добавляем обработчик для форматирования URL при потере фокуса
+                    input.addEventListener('blur', function() {
+                        const value = this.value.trim();
+                        if (value) {
+                            // Форматируем URL и обновляем поле
+                            this.value = formatUrl(value);
+                            updateSocialData(container, hiddenInput);
+                        }
+                    });
+                    
+                    // Обновляем данные и состояние кнопок
                     updateSocialData(container, hiddenInput);
                     updateSocialButtonStates(buttons, addedSocialTypes);
                 });
             });
+        }
+        
+        // Функция для форматирования URL - добавляет https:// если протокол не указан
+        function formatUrl(url) {
+            if (!url) return '';
+            
+            // Удаляем лишние пробелы
+            url = url.trim();
+            
+            // Если ссылка уже содержит протокол (http:// или https://) - оставляем как есть
+            if (url.match(/^https?:\/\//i)) {
+                return url;
+            }
+            
+            // Иначе добавляем https://
+            return 'https://' + url;
         }
         
         // Обновление данных социальных сетей - переделанная версия для сохранения в отдельные переменные
@@ -975,8 +1002,10 @@
                 const value = input.value;
                 
                 if (value) {
+                    // Форматируем URL перед сохранением
+                    const formattedValue = formatUrl(value);
                     // Сохраняем каждую соцсеть в отдельное поле объекта
-                    socialData[socialType] = value;
+                    socialData[socialType] = formattedValue;
                 }
             });
             
@@ -1297,6 +1326,20 @@
                 input.addEventListener('input', function() {
                     updateSocialData(container, hiddenInput);
                 });
+                
+                // Добавляем обработчик для форматирования URL при потере фокуса
+                input.addEventListener('blur', function() {
+                    const value = this.value.trim();
+                    if (value) {
+                        // Форматируем URL и обновляем поле
+                        this.value = formatUrl(value);
+                        updateSocialData(container, hiddenInput);
+                    }
+                });
+                
+                // Обновляем данные и состояние кнопок
+                updateSocialData(container, hiddenInput);
+                updateSocialButtonStates(buttons, addedSocialTypes);
             });
             
             // Обновляем состояние кнопок после восстановления
@@ -1484,6 +1527,11 @@
                 if (websiteValue === 'URL') {
                     websiteURLInput.style.display = 'block';
                     websiteURLInput.required = true;
+                    // Убираем ошибку валидации при смене опции
+                    websiteURLInput.classList.remove('error-field');
+                    
+                    // Подсказка для ввода
+                    websiteURLInput.placeholder = 'Например: example.com или https://example.com';
                 } else {
                     websiteURLInput.style.display = 'none';
                     websiteURLInput.required = false;
@@ -1491,6 +1539,16 @@
                 }
                 
                 saveFormData();
+            });
+            
+            // Добавляем обработчик для автоматического форматирования URL при потере фокуса
+            document.getElementById('companyWebsiteURL').addEventListener('blur', function() {
+                const value = this.value.trim();
+                if (value) {
+                    // Не обновляем поле во время ввода, только при потере фокуса
+                    this.value = formatUrl(value);
+                    saveFormData();
+                }
             });
             
             // Инициализируем обработку социальных сетей
@@ -1562,7 +1620,8 @@
             
             if (companyWebsiteOption === 'URL') {
                 const websiteURL = document.getElementById('companyWebsiteURL').value || '';
-                formData.append('companyWebsite', websiteURL);
+                // Форматируем URL сайта компании
+                formData.append('companyWebsite', formatUrl(websiteURL));
             } else {
                 formData.append('companyWebsite', companyWebsiteOption);
             }
