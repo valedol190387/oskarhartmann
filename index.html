@@ -894,7 +894,7 @@
                     placeholder = 'username или vk.com/username';
                     break;
                 case 'youtube':
-                    placeholder = 'username или youtube.com/username';
+                    placeholder = '@username или youtube.com/@username';
                     break;
                 case 'other':
                 default:
@@ -1055,9 +1055,13 @@
                 case 'youtube':
                     // Проверяем, есть ли в ссылке уже youtube.com или www.youtube.com
                     if (url.includes('youtube.com/')) {
+                        // Если нет символа @ после youtube.com/, добавляем его
+                        if (!url.includes('youtube.com/@')) {
+                            url = url.replace('youtube.com/', 'youtube.com/@');
+                        }
                         return 'https://' + url;
                     }
-                    return 'https://www.youtube.com/' + url;
+                    return 'https://www.youtube.com/@' + url;
                     
                 case 'other':
                 default:
