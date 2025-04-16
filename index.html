@@ -881,10 +881,30 @@
         
         // Улучшенная функция для создания социальных полей - вынесена общая логика
         function createSocialField(container, socialType, socialLabel, fieldId, value = '') {
+            // Определяем подсказку в зависимости от типа соцсети
+            let placeholder = '';
+            switch(socialType) {
+                case 'telegram':
+                    placeholder = '@username или t.me/username';
+                    break;
+                case 'instagram':
+                    placeholder = '@username или instagram.com/username';
+                    break;
+                case 'vk':
+                    placeholder = 'username или vk.com/username';
+                    break;
+                case 'youtube':
+                    placeholder = 'username или youtube.com/username';
+                    break;
+                case 'other':
+                default:
+                    placeholder = 'Укажите ссылку';
+            }
+            
             const fieldHtml = `
                 <div class="social-field" data-social="${socialType}">
                     <span>${socialLabel}:</span>
-                    <input type="text" id="${fieldId}" class="social-input" value="${value}">
+                    <input type="text" id="${fieldId}" class="social-input" value="${value}" placeholder="${placeholder}">
                     <button type="button" class="remove-button">✕</button>
                 </div>
             `;
@@ -962,8 +982,9 @@
                     input.addEventListener('blur', function() {
                         const value = this.value.trim();
                         if (value) {
-                            // Форматируем URL и обновляем поле
-                            this.value = formatUrl(value);
+                            // Используем специальную функцию для форматирования соцсетей
+                            const socialType = this.closest('.social-field').getAttribute('data-social');
+                            this.value = formatSocialUrl(value, socialType);
                             updateSocialData(container, hiddenInput);
                         }
                     });
@@ -991,7 +1012,61 @@
             return 'https://' + url;
         }
         
-        // Обновление данных социальных сетей - переделанная версия для сохранения в отдельные переменные
+        // Специальная функция для форматирования ссылок на социальные сети
+        function formatSocialUrl(url, socialType) {
+            if (!url) return '';
+            
+            // Удаляем лишние пробелы
+            url = url.trim();
+            
+            // Если ссылка уже содержит протокол (http:// или https://) - оставляем как есть
+            if (url.match(/^https?:\/\//i)) {
+                return url;
+            }
+            
+            // Удаляем @ в начале, если есть
+            if (url.startsWith('@')) {
+                url = url.substring(1);
+            }
+            
+            // Форматируем в зависимости от типа соцсети
+            switch(socialType) {
+                case 'telegram':
+                    // Проверяем, есть ли в ссылке уже t.me
+                    if (url.includes('t.me/')) {
+                        return 'https://' + url;
+                    }
+                    return 'https://t.me/' + url;
+                    
+                case 'instagram':
+                    // Проверяем, есть ли в ссылке уже instagram.com или www.instagram.com
+                    if (url.includes('instagram.com/')) {
+                        return 'https://' + url;
+                    }
+                    return 'https://www.instagram.com/' + url;
+                    
+                case 'vk':
+                    // Проверяем, есть ли в ссылке уже vk.com
+                    if (url.includes('vk.com/')) {
+                        return 'https://' + url;
+                    }
+                    return 'https://vk.com/' + url;
+                    
+                case 'youtube':
+                    // Проверяем, есть ли в ссылке уже youtube.com или www.youtube.com
+                    if (url.includes('youtube.com/')) {
+                        return 'https://' + url;
+                    }
+                    return 'https://www.youtube.com/' + url;
+                    
+                case 'other':
+                default:
+                    // Для других типов просто добавляем https://
+                    return formatUrl(url);
+            }
+        }
+        
+        // Обновление данных социальных сетей - переделанная версия для использования специального форматирования
         function updateSocialData(container, hiddenInput) {
             const socialFields = container.querySelectorAll('.social-field');
             const socialData = {};
@@ -1002,8 +1077,8 @@
                 const value = input.value;
                 
                 if (value) {
-                    // Форматируем URL перед сохранением
-                    const formattedValue = formatUrl(value);
+                    // Используем специальную функцию форматирования для соцсетей
+                    const formattedValue = formatSocialUrl(value, socialType);
                     // Сохраняем каждую соцсеть в отдельное поле объекта
                     socialData[socialType] = formattedValue;
                 }
@@ -1331,8 +1406,9 @@
                 input.addEventListener('blur', function() {
                     const value = this.value.trim();
                     if (value) {
-                        // Форматируем URL и обновляем поле
-                        this.value = formatUrl(value);
+                        // Используем специальную функцию для форматирования соцсетей
+                        const socialType = this.closest('.social-field').getAttribute('data-social');
+                        this.value = formatSocialUrl(value, socialType);
                         updateSocialData(container, hiddenInput);
                     }
                 });
